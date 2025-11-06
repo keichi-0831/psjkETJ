@@ -702,7 +702,7 @@
 
     <div class="container">
         <h1>日谷开团打表机 💖</h1>
-        <p class="footer-credit" style="margin-top: -10px; margin-bottom: 20px;">all by keichi</p>
+        <p class="footer-credit" style="margin-top: -10px; margin-bottom: 20px;">All by keichi</p>
 
         <div class="action-buttons">
             <button id="archive-button" onclick="archiveData()">💾 存储档案</button>
@@ -817,7 +817,7 @@
             </div>
         </section>
 
-        <p class="footer-credit">all by keichi</p>
+        <p class="footer-credit">All by keichi</p>
 
         <div id="export-options-modal">
             <h3>选择导出内容 (Excel)</h3>
@@ -1471,7 +1471,7 @@
             row.innerHTML = rowHTML;
         }
 
-        function populateShippingTableRow(row, typeKey, index, data, isGift = false, isFromSync = false) {
+             function populateShippingTableRow(row, typeKey, index, data, isGift = false, isFromSync = false) {
             const itemConfig = itemTypes[typeKey];
             row.dataset.type = typeKey;
             row.dataset.index = index;
@@ -1480,24 +1480,24 @@
 
             const onInputDist = 'oninput="updateAllPrices()"';
             const onKeyDown = `handleDistroInput(event, '${typeKey}', true)`;
-            const readonly = isFromSync ? 'readonly' : '';
 
             const distCellContent = (distDataArray = []) => {
                 let content = `<div class="distribution-container">`;
                 (distDataArray.length ? distDataArray : [{ name: '', quantity: '' }]).forEach(d => {
                     content += `<div class="dist-entry">
-                        <input type="text" class="dist-name" placeholder="名字" value="${d.name || ''}" onkeydown="${onKeyDown}" ${onInputDist} ${readonly}>
-                        <input type="number" class="dist-quantity" placeholder="数量" min="0" value="${d.quantity || ''}" onkeydown="${onKeyDown}" ${onInputDist} ${readonly}>
-                        <button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}', true)" ${isFromSync ? 'style="display:none;"' : ''}>×</button>
+                        <input type="text" class="dist-name" placeholder="名字" value="${d.name || ''}" onkeydown="${onKeyDown}" ${onInputDist}>
+                        <input type="number" class="dist-quantity" placeholder="数量" min="0" value="${d.quantity || ''}" onkeydown="${onKeyDown}" ${onInputDist}>
+                        <button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}', true)">×</button>
                     </div>`;
                 });
-                return content + `${isFromSync ? '' : `<button type="button" class="add-btn-text" onclick="addDistributionEntry(this, '${typeKey}', true)">+</button>`}`;
+                // 修正：无论是否同步，都显示添加按钮
+                return content + `<button type="button" class="add-btn-text" onclick="addDistributionEntry(this, '${typeKey}', true)">+</button>`;
             };
 
             let rowHTML = '';
 
             if (isGift) {
-                // 赠品行：只有角色、价格、排表三列
+                // 赠品行逻辑不变
                 row.classList.add('gift-row');
                 rowHTML = `<td class="col-name"><input type="text" placeholder="赠品角色..." value="${data.charName || ''}"></td>
                            <td class="col-value" colspan="2"><input type="number" class="gift-price" placeholder="价格" value="${data.giftPrice || 0}" oninput="updateAllPrices()"></td>
@@ -1506,14 +1506,14 @@
                            <td class="col-value"></td>
                            <td class="col-operation"><button type="button" class="remove-btn-text" onclick="this.closest('tr').remove(); updateAllPrices();">×</button></td>`;
             } else {
-                // 普通行
-                rowHTML = `<td class="col-name"><input type="text" placeholder="角色名..." value="${data.charName || ''}" ${readonly}></td>
+                // 普通行（包括同步行）的逻辑
+                rowHTML = `<td class="col-name"><input type="text" placeholder="角色名..." value="${data.charName || ''}" ${isFromSync ? 'readonly' : ''}></td>
                            <td class="col-value shipping-avg-price">0.00</td>
-                           <td class="col-value"><input type="number" class="adj-price" value="${data.adjPrice || 0}" oninput="updateAllPrices()" ${readonly}></td>
+                           <td class="col-value"><input type="number" class="adj-price" value="${data.adjPrice || 0}" oninput="updateAllPrices()"></td>
                            <td class="col-value shipping-final-price">0.00</td>
                            <td class="col-distribution">${distCellContent(data.distribution)}</td>
                            <td class="col-value shipping-remaining-quantity">N/A</td>
-                           <td class="col-operation">${isFromSync ? '' : '<button type="button" class="remove-btn-text" onclick="this.closest(\'tr\').remove(); updateAllPrices();">×</button>'}</td>`;
+                           <td class="col-operation">${isFromSync ? '<span style="font-size:0.8em; color:var(--light-text-color);">(同步)</span>' : '<button type="button" class="remove-btn-text" onclick="this.closest(\'tr\').remove(); updateAllPrices();">×</button>'}</td>`;
             }
 
             row.innerHTML = rowHTML;
