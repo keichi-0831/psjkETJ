@@ -575,6 +575,119 @@
             border-color: var(--primary-color);
             transform: scale(1.15);
         }
+
+        /* 赠品标记行样式 */
+        .gift-marker-row {
+            background-color: var(--highlight-bg) !important;
+        }
+
+        .gift-marker-row td {
+            padding: 12px !important;
+        }
+
+        /* 赠品行样式 */
+        .gift-row {
+            background-color: var(--highlight-bg) !important;
+        }
+
+        .gift-row input[type="text"],
+        .gift-row input[type="number"] {
+            background-color: white;
+        }
+
+        .gift-row td {
+            padding: 10px !important;
+        }
+
+        /* 肾表和排表的美化样式 */
+        .person-bill-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background-color: var(--highlight-bg);
+            border-radius: 4px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .person-items-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: var(--highlight-bg);
+            border-radius: 4px;
+        }
+
+        .person-name {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .item-line {
+            padding: 3px 0 3px 15px;
+            color: var(--text-color);
+        }
+
+        /* 退补差额两列布局 */
+        .refund-payment-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .refund-column {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid #c8e6c9;
+        }
+
+        .refund-column::before {
+            content: "💰 需退款";
+            display: block;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #c8e6c9;
+        }
+
+        .payment-column {
+            background-color: #ffebee;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border: 1px solid #ffcdd2;
+        }
+
+        .payment-column::before {
+            content: "💸 需补款";
+            display: block;
+            font-weight: bold;
+            color: #c62828;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ffcdd2;
+        }
+
+        .refund-item,
+        .payment-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background-color: white;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .refund-item {
+            color: #2e7d32;
+            border-left: 3px solid #4caf50;
+        }
+
+        .payment-item {
+            color: #c62828;
+            border-left: 3px solid #f44336;
+        }
     </style>
 </head>
 
@@ -648,7 +761,7 @@
             <div
                 style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 20px;">
                 <div class="calc-section">
-                    <h3>总肾表</h3>
+                    <h3>本次肾表</h3>
                     <div class="copy-button-container" style="position: relative;">
                         <button class="copy-button" onclick="copyToClipboard('total-bill-output', this)"
                             style="position: absolute; top: -5px; right: 0;">📋 复制</button>
@@ -656,20 +769,50 @@
                     </div>
                 </div>
                 <div class="calc-section">
-                    <h3>总排表</h3>
+                    <h3>本次排表</h3>
                     <div class="copy-button-container" style="position: relative;">
                         <button class="copy-button" onclick="copyToClipboard('total-items-output', this)"
                             style="position: absolute; top: -5px; right: 0;">📋 复制</button>
                         <div id="total-items-output">点击按钮计算...</div>
                     </div>
                 </div>
+            </div>
+
+            <h2 style="margin-top: 40px;">【实际出荷】</h2>
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 20px;">
                 <div class="calc-section">
-                    <h3>肾额核对</h3>
-                    <div id="check-total-output">
-                        <p>应付总额: <span id="expected-total" class="result-field">0.00</span> 元</p>
-                        <p>实收总额: <span id="actual-total" class="result-field">0.00</span> 元</p>
-                        <p id="check-diff" class="info-text"></p>
+                    <h3>实际肾表</h3>
+                    <div class="copy-button-container" style="position: relative;">
+                        <button class="copy-button" onclick="copyToClipboard('actual-bill-output', this)"
+                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
+                        <div id="actual-bill-output">点击按钮计算...</div>
                     </div>
+                </div>
+                <div class="calc-section">
+                    <h3>实际排表</h3>
+                    <div class="copy-button-container" style="position: relative;">
+                        <button class="copy-button" onclick="copyToClipboard('actual-items-output', this)"
+                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
+                        <div id="actual-items-output">点击按钮计算...</div>
+                    </div>
+                </div>
+                <div class="calc-section" style="grid-column: 1 / -1;">
+                    <h3>退补差额</h3>
+                    <div class="copy-button-container" style="position: relative;">
+                        <button class="copy-button" onclick="copyToClipboard('refund-output', this)"
+                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
+                        <div id="refund-output" class="refund-payment-grid">点击按钮计算...</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 40px;">【肾额核对】</h2>
+            <div class="calc-section">
+                <div id="check-total-output">
+                    <p>应付总额: <span id="expected-total" class="result-field">0.00</span> 元</p>
+                    <p>实收总额: <span id="actual-total" class="result-field">0.00</span> 元</p>
+                    <p id="check-diff" class="info-text"></p>
                 </div>
             </div>
         </section>
@@ -756,11 +899,11 @@
                     '--bg-color': '#eaf2f8',
                     '--card-bg': '#ffffff',
                     '--primary-color': '#97c6da', // 更清晰的蓝色
-                    '--primary-hover-color': '#6687cc',
+                    '--primary-hover-color': '#8295cd',
                     '--secondary-color': '#edaabc', // 更清晰的粉红色/红色系标题
                     '--accent-color': '#d78996', // 重置/删除按钮
                     '--accent-hover-color': '#ee6593',
-                    '--success-color': '#f2d4ec', 
+                    '--success-color': '#f2d4ec',
                     '--success-hover-color': '#e6a8d7',
                     '--text-color': '#34495e', // 大幅加深的文字颜色
                     '--light-text-color': '#7f8c8d', // 大幅加深的次要文字颜色
@@ -882,6 +1025,7 @@
             const data = {
                 exchangeRate: document.getElementById('exchange-rate').value,
                 tables: {},
+                shippingTables: {}, // 新增：存储出荷配比数据
                 itemConfigs: {},
                 dynamicTypeKeys: [],
                 orderedTypesForTabs: [...orderedTypesForTabs],
@@ -903,45 +1047,93 @@
                 }
 
                 const dataTableKey = itemConfig.key;
+
+                // 保存排表数据
                 data.tables[dataTableKey] = [];
                 const table = document.getElementById(`data-table-${typeKey}`);
-                if (!table) return;
+                if (table) {
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        const rowData = { distribution: [] };
+                        let hasContent = false;
 
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    const rowData = { distribution: [] };
-                    let hasContent = false;
+                        const charNameInput = row.querySelector('input[placeholder="角色名..."]');
+                        if (charNameInput) rowData.charName = charNameInput.value.trim();
 
-                    const charNameInput = row.querySelector('input[placeholder="角色名..."]');
-                    if (charNameInput) rowData.charName = charNameInput.value.trim();
+                        const kindInput = row.querySelector('input[data-type="kind"]');
+                        if (kindInput) rowData.kind = kindInput.value.trim();
 
-                    const kindInput = row.querySelector('input[data-type="kind"]');
-                    if (kindInput) rowData.kind = kindInput.value.trim();
+                        if (rowData.charName || rowData.kind) hasContent = true;
 
-                    if (rowData.charName || rowData.kind) hasContent = true;
+                        const priceInput = row.querySelector('input[data-type="price"]');
+                        if (priceInput) rowData.price = priceInput.value.trim();
+                        if (rowData.price) hasContent = true;
 
-                    const priceInput = row.querySelector('input[data-type="price"]');
-                    if (priceInput) rowData.price = priceInput.value.trim();
-                    if (rowData.price) hasContent = true;
+                        const adjPriceInput = row.querySelector('.adj-price');
+                        if (adjPriceInput) rowData.adjPrice = adjPriceInput.value;
+                        if (parseFloat(rowData.adjPrice) !== 0) hasContent = true;
 
-                    const adjPriceInput = row.querySelector('.adj-price');
-                    if (adjPriceInput) rowData.adjPrice = adjPriceInput.value;
-                    if (parseFloat(rowData.adjPrice) !== 0) hasContent = true;
+                        rowData.isAutoGen = row.dataset.autogen === 'true';
 
-                    rowData.isAutoGen = row.dataset.autogen === 'true';
+                        row.querySelectorAll('.dist-entry').forEach(entry => {
+                            const name = entry.querySelector('.dist-name').value.trim();
+                            const quantity = entry.querySelector('.dist-quantity').value.trim();
+                            if (name || quantity) {
+                                rowData.distribution.push({ name, quantity });
+                                hasContent = true;
+                            }
+                        });
 
-                    row.querySelectorAll('.dist-entry').forEach(entry => {
-                        const name = entry.querySelector('.dist-name').value.trim();
-                        const quantity = entry.querySelector('.dist-quantity').value.trim();
-                        if (name || quantity) {
-                            rowData.distribution.push({ name, quantity });
-                            hasContent = true;
+                        if (itemConfig.hasChars || hasContent) {
+                            data.tables[dataTableKey].push(rowData);
                         }
                     });
+                }
 
-                    if (itemConfig.hasChars || hasContent) {
-                        data.tables[dataTableKey].push(rowData);
+                // 新增：保存出荷配比数据（只针对盒子类型）
+                if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
+                    data.shippingTables[dataTableKey] = [];
+                    const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
+                    if (shippingTable) {
+                        shippingTable.querySelectorAll('tbody tr').forEach(row => {
+                            const rowData = { distribution: [] };
+                            let hasContent = false;
+
+                            // 检查是否是赠品行
+                            if (row.dataset.isgift === 'true') {
+                                rowData.isGift = true;
+                                const charNameInput = row.querySelector('input[placeholder="赠品角色..."]');
+                                if (charNameInput) rowData.charName = charNameInput.value.trim();
+                                const giftPriceInput = row.querySelector('.gift-price');
+                                if (giftPriceInput) rowData.giftPrice = giftPriceInput.value;
+                                hasContent = true;
+                            } else {
+                                const charNameInput = row.querySelector('input[placeholder="角色名..."]');
+                                if (charNameInput) rowData.charName = charNameInput.value.trim();
+                                if (rowData.charName) hasContent = true;
+
+                                const adjPriceInput = row.querySelector('.adj-price');
+                                if (adjPriceInput) rowData.adjPrice = adjPriceInput.value;
+                                if (parseFloat(rowData.adjPrice) !== 0) hasContent = true;
+
+                                rowData.isFromSync = row.dataset.fromsync === 'true';
+                            }
+
+                            row.querySelectorAll('.dist-entry').forEach(entry => {
+                                const name = entry.querySelector('.dist-name').value.trim();
+                                const quantity = entry.querySelector('.dist-quantity').value.trim();
+                                if (name || quantity) {
+                                    rowData.distribution.push({ name, quantity });
+                                    hasContent = true;
+                                }
+                            });
+
+
+                            if (hasContent) {
+                                data.shippingTables[dataTableKey].push(rowData);
+                            }
+                        });
                     }
-                });
+                }
             });
 
             const allSaves = JSON.parse(localStorage.getItem(SAVE_MANIFEST_KEY) || '{}');
@@ -1001,7 +1193,7 @@
 
             orderedTypesForTabs = orderedTypesForTabs.filter(typeKey => itemTypes[typeKey]);
 
-            generateTables(dataToLoad ? dataToLoad.tables : null);
+            generateTables(dataToLoad ? dataToLoad.tables : null, dataToLoad ? dataToLoad.shippingTables : null);
             updateAllPrices();
 
             if (importedData || !dataToLoad) {
@@ -1097,7 +1289,7 @@
             updateAllPrices();
         }
 
-        function generateTables(savedTableRows) {
+        function generateTables(savedTableRows, savedShippingTableRows) {
             const tabsContainer = document.getElementById('item-tabs');
             const tablesContainer = document.getElementById('item-tables-container');
             tabsContainer.innerHTML = '';
@@ -1141,6 +1333,7 @@
                     configHTML += `</div>`;
                 }
 
+                // 排表表格
                 let tableTitle = `${defaults.name || itemConfig.key} 排表`;
                 let tableHTMLContent = `<div class="table-scroll-wrapper"><table id="data-table-${typeKey}"><thead><tr>`;
 
@@ -1155,9 +1348,41 @@
                 }
                 tableHTMLContent += `<button onclick="calculatePageBill('${typeKey}')">计算本页肾表</button><div id="page-bill-${typeKey}" class="info-text" style="white-space: pre-wrap;"></div>`;
 
-                tableDiv.innerHTML = configHTML + `<h3>${tableTitle}</h3>` + tableHTMLContent;
+                // 新增：出荷配比表格（只针对盒子类型）
+                let shippingTableHTML = '';
+                if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
+                    shippingTableHTML = `
+                        <h3 style="margin-top: 40px;">${defaults.name || itemConfig.key} 出荷配比 
+                            <button onclick="syncToShippingTable('${typeKey}')" style="margin-left: 15px; font-size: 0.85em;">📋 同步排表</button>
+                        </h3>
+                        <div class="table-scroll-wrapper">
+                            <table id="shipping-table-${typeKey}">
+                                <thead>
+                                    <tr>
+                                        <th class="col-name">角色</th>
+                                        <th class="col-value">均价</th>
+                                        <th class="col-value">调价 <span id="调价提醒-shipping-${typeKey}" class="warning-text"></span></th>
+                                        <th class="col-value">终价</th>
+                                        <th class="col-distribution">出荷配比</th>
+                                        <th class="col-value">余量</th>
+                                        <th class="col-operation">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                                             <p style="font-size: 0.85em; color: var(--light-text-color); margin-top: 10px; margin-bottom: 5px;">
+                            💡 提示：赠品将用于降低本盒均价计算，公式为 (总价×汇率 - 特典价格 - 赠品总价) ÷ 角色数
+                        </p>
+                        <button class="add-row-btn" onclick="addGiftRow('${typeKey}')">🎁 添加赠品</button>
+            <div id="shipping-page-bill-${typeKey}" class="info-text" style="white-space: pre-wrap;"></div>
+                    `;
+                }
+
+                tableDiv.innerHTML = configHTML + `<h3>${tableTitle}</h3>` + tableHTMLContent + shippingTableHTML;
                 tablesContainer.appendChild(tableDiv);
 
+                // 填充排表数据
                 const tableBody = document.querySelector(`#data-table-${typeKey} tbody`);
                 const savedRowsForType = savedTableRows ? savedTableRows[itemConfig.key] : null;
 
@@ -1173,6 +1398,20 @@
                         populateTableRow(newRow, typeKey, i, {});
                     }
                 }
+
+                // 新增：填充出荷配比数据
+                if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
+                    const shippingTableBody = document.querySelector(`#shipping-table-${typeKey} tbody`);
+                    const savedShippingRows = savedShippingTableRows ? savedShippingTableRows[itemConfig.key] : null;
+
+                    if (savedShippingRows && savedShippingRows.length > 0) {
+                        savedShippingRows.forEach((rowData, i) => {
+                            const newRow = shippingTableBody.insertRow();
+                            populateShippingTableRow(newRow, typeKey, i, rowData, rowData.isGift || false, rowData.isFromSync || false);
+                        });
+                    }
+
+                }
             });
 
             const addNewButton = document.createElement('button');
@@ -1181,6 +1420,7 @@
             addNewButton.onclick = addNewCustomItemType;
             tabsContainer.appendChild(addNewButton);
         }
+
 
         function populateTableRow(row, typeKey, index, data) {
             const itemConfig = itemTypes[typeKey];
@@ -1205,8 +1445,9 @@
 
             let rowHTML = '';
             if (typeKey === 'bonus') {
-                rowHTML = `<td class="col-name"><input type="text" data-type="kind" value="${data.kind || ''}" ${data.isAutoGen ? 'readonly' : ''}></td>
-                           <td class="col-value"><input type="number" data-type="price" value="${data.price || 0}" ${data.isAutoGen ? 'readonly' : ''}></td>
+                const readonlyAttr = data.isAutoGen ? 'readonly' : '';
+                rowHTML = `<td class="col-name"><input type="text" data-type="kind" value="${data.kind || ''}" ${readonlyAttr}></td>
+                           <td class="col-value"><input type="number" data-type="price" value="${data.price || 0}" ${readonlyAttr}></td>
                            <td class="col-value"><input type="number" class="adj-price" value="${data.adjPrice || 0}" oninput="updateAllPrices()"></td>
                            <td class="col-value final-price">0.00</td>
                            <td class="col-distribution">${distCellContent(data.distribution)}</td>
@@ -1230,6 +1471,126 @@
             row.innerHTML = rowHTML;
         }
 
+        function populateShippingTableRow(row, typeKey, index, data, isGift = false, isFromSync = false) {
+            const itemConfig = itemTypes[typeKey];
+            row.dataset.type = typeKey;
+            row.dataset.index = index;
+            row.dataset.isgift = isGift;
+            row.dataset.fromsync = isFromSync;
+
+            const onInputDist = 'oninput="updateAllPrices()"';
+            const onKeyDown = `handleDistroInput(event, '${typeKey}', true)`;
+            const readonly = isFromSync ? 'readonly' : '';
+
+            const distCellContent = (distDataArray = []) => {
+                let content = `<div class="distribution-container">`;
+                (distDataArray.length ? distDataArray : [{ name: '', quantity: '' }]).forEach(d => {
+                    content += `<div class="dist-entry">
+                        <input type="text" class="dist-name" placeholder="名字" value="${d.name || ''}" onkeydown="${onKeyDown}" ${onInputDist} ${readonly}>
+                        <input type="number" class="dist-quantity" placeholder="数量" min="0" value="${d.quantity || ''}" onkeydown="${onKeyDown}" ${onInputDist} ${readonly}>
+                        <button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}', true)" ${isFromSync ? 'style="display:none;"' : ''}>×</button>
+                    </div>`;
+                });
+                return content + `${isFromSync ? '' : `<button type="button" class="add-btn-text" onclick="addDistributionEntry(this, '${typeKey}', true)">+</button>`}`;
+            };
+
+            let rowHTML = '';
+
+            if (isGift) {
+                // 赠品行：只有角色、价格、排表三列
+                row.classList.add('gift-row');
+                rowHTML = `<td class="col-name"><input type="text" placeholder="赠品角色..." value="${data.charName || ''}"></td>
+                           <td class="col-value" colspan="2"><input type="number" class="gift-price" placeholder="价格" value="${data.giftPrice || 0}" oninput="updateAllPrices()"></td>
+                           <td class="col-value"></td>
+                           <td class="col-distribution">${distCellContent(data.distribution)}</td>
+                           <td class="col-value"></td>
+                           <td class="col-operation"><button type="button" class="remove-btn-text" onclick="this.closest('tr').remove(); updateAllPrices();">×</button></td>`;
+            } else {
+                // 普通行
+                rowHTML = `<td class="col-name"><input type="text" placeholder="角色名..." value="${data.charName || ''}" ${readonly}></td>
+                           <td class="col-value shipping-avg-price">0.00</td>
+                           <td class="col-value"><input type="number" class="adj-price" value="${data.adjPrice || 0}" oninput="updateAllPrices()" ${readonly}></td>
+                           <td class="col-value shipping-final-price">0.00</td>
+                           <td class="col-distribution">${distCellContent(data.distribution)}</td>
+                           <td class="col-value shipping-remaining-quantity">N/A</td>
+                           <td class="col-operation">${isFromSync ? '' : '<button type="button" class="remove-btn-text" onclick="this.closest(\'tr\').remove(); updateAllPrices();">×</button>'}</td>`;
+            }
+
+            row.innerHTML = rowHTML;
+        }
+
+        function addGiftRow(typeKey) {
+            const tableBody = document.querySelector(`#shipping-table-${typeKey} tbody`);
+            if (!tableBody) return;
+
+            const newIndex = tableBody.rows.length;
+            const newRow = tableBody.insertRow();
+            populateShippingTableRow(newRow, typeKey, newIndex, {}, true, false);
+            updateAllPrices();
+        }
+
+        function syncToShippingTable(typeKey) {
+            const sourceTable = document.getElementById(`data-table-${typeKey}`);
+            const targetTable = document.getElementById(`shipping-table-${typeKey}`);
+
+            if (!sourceTable || !targetTable) return;
+
+            if (!confirm('这将覆盖出荷配比表中的所有非赠品数据，确定要同步吗？')) return;
+
+            const targetBody = targetTable.querySelector('tbody');
+
+            // 保存现有的赠品行
+            const existingGiftRows = [];
+            targetBody.querySelectorAll('tr[data-isgift="true"]').forEach(row => {
+                const charName = row.querySelector('input[placeholder="赠品角色..."]')?.value || '';
+                const giftPrice = row.querySelector('.gift-price')?.value || 0;
+                const distribution = [];
+                row.querySelectorAll('.dist-entry').forEach(entry => {
+                    const name = entry.querySelector('.dist-name').value.trim();
+                    const quantity = entry.querySelector('.dist-quantity').value.trim();
+                    if (name || quantity) {
+                        distribution.push({ name, quantity });
+                    }
+                });
+                existingGiftRows.push({ charName, giftPrice, distribution });
+            });
+
+            // 清空表格
+            targetBody.innerHTML = '';
+
+            // 添加同步的行
+            sourceTable.querySelectorAll('tbody tr').forEach((row, index) => {
+                const charName = row.querySelector('input[placeholder="角色名..."]')?.value || '';
+                const adjPrice = row.querySelector('.adj-price')?.value || 0;
+
+                const distribution = [];
+                row.querySelectorAll('.dist-entry').forEach(entry => {
+                    const name = entry.querySelector('.dist-name').value.trim();
+                    const quantity = entry.querySelector('.dist-quantity').value.trim();
+                    if (name || quantity) {
+                        distribution.push({ name, quantity });
+                    }
+                });
+
+                const newRow = targetBody.insertRow();
+                populateShippingTableRow(newRow, typeKey, index, {
+                    charName,
+                    adjPrice,
+                    distribution
+                }, false, true); // isGift=false, isFromSync=true
+            });
+
+            // 恢复赠品行
+            existingGiftRows.forEach((giftData, index) => {
+                const newRow = targetBody.insertRow();
+                populateShippingTableRow(newRow, typeKey, targetBody.rows.length, giftData, true, false);
+            });
+
+            updateAllPrices();
+            alert('已同步！赠品数据已保留。');
+        }
+
+
         function addDynamicRow(typeKey) {
             const tableBody = document.querySelector(`#data-table-${typeKey} tbody`);
             if (!tableBody) return;
@@ -1238,30 +1599,31 @@
             populateTableRow(newRow, typeKey, newIndex, { isAutoGen: false });
         }
 
-        function handleDistroInput(event, typeKey) {
+        function handleDistroInput(event, typeKey, isShipping = false) {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                addDistributionEntry(event.target, typeKey);
+                addDistributionEntry(event.target, typeKey, isShipping);
             }
         }
 
-        function addDistributionEntry(element, typeKey) {
+
+        function addDistributionEntry(element, typeKey, isShipping = false) {
             const container = element.closest('.col-distribution').querySelector('.distribution-container');
             const onInput = 'oninput="updateAllPrices()"';
-            const onKeyDown = `handleDistroInput(event, '${typeKey}')`;
+            const onKeyDown = `handleDistroInput(event, '${typeKey}', ${isShipping})`;
             const newEntry = document.createElement('div');
             newEntry.className = 'dist-entry';
-            newEntry.innerHTML = `<input type="text" class="dist-name" placeholder="名字" onkeydown="${onKeyDown}" ${onInput}><input type="number" class="dist-quantity" placeholder="数量" min="0" value="" onkeydown="${onKeyDown}" ${onInput}><button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}')">×</button>`;
+            newEntry.innerHTML = `<input type="text" class="dist-name" placeholder="名字" onkeydown="${onKeyDown}" ${onInput}><input type="number" class="dist-quantity" placeholder="数量" min="0" value="" onkeydown="${onKeyDown}" ${onInput}><button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}', ${isShipping})">×</button>`;
             container.appendChild(newEntry);
             newEntry.querySelector('.dist-name').focus();
             updateAllPrices();
         }
 
-        function removeDistributionEntry(button, typeKey) {
+        function removeDistributionEntry(button, typeKey, isShipping = false) {
             const entry = button.parentElement;
             const container = entry.parentElement;
             entry.remove();
-            if (container.children.length === 0) addDistributionEntry(container.nextElementSibling, typeKey);
+            if (container.children.length === 0) addDistributionEntry(container.nextElementSibling, typeKey, isShipping);
             updateAllPrices();
         }
 
@@ -1269,28 +1631,61 @@
             const bonusTableBody = document.querySelector('#data-table-bonus tbody');
             if (!bonusTableBody) return;
 
-            // Remove only auto-generated rows
-            bonusTableBody.querySelectorAll('tr[data-autogen="true"]').forEach(row => row.remove());
-
-            const existingCustomBonuses = new Set();
-            bonusTableBody.querySelectorAll('tr').forEach(row => {
-                const kindInput = row.querySelector('input[data-type="kind"]');
-                if (kindInput) existingCustomBonuses.add(kindInput.value.trim());
-            });
-
+            // 1. 找出所有应该存在的特典，以及它们的价格
+            const requiredBonuses = new Map();
             Object.keys(itemTypes).forEach(typeKey => {
                 const itemConfig = itemTypes[typeKey];
                 if (itemConfig && itemConfig.hasBonusPrice) {
                     const bonusPrice = parseFloat(itemConfig.defaults.bonusPrice) || 0;
                     const bonusName = `${itemConfig.defaults.name}特典`;
-                    if (bonusPrice > 0 && !existingCustomBonuses.has(bonusName)) {
-                        const newIndex = bonusTableBody.rows.length;
-                        const newRow = bonusTableBody.insertRow();
-                        populateTableRow(newRow, 'bonus', newIndex, { kind: bonusName, price: bonusPrice.toFixed(2), isAutoGen: true });
+                    if (bonusPrice > 0) {
+                        requiredBonuses.set(bonusName, bonusPrice);
                     }
                 }
             });
+
+            // 2. 记录当前表格中已存在的自动生成特典行
+            const existingRows = new Map();
+            bonusTableBody.querySelectorAll('tr[data-autogen="true"]').forEach(row => {
+                const kindInput = row.querySelector('input[data-type="kind"]');
+                if (kindInput && kindInput.value) {
+                    existingRows.set(kindInput.value, row);
+                }
+            });
+
+            // 3. 遍历应该存在的特典，更新或添加行
+            requiredBonuses.forEach((price, name) => {
+                const existingRow = existingRows.get(name);
+                if (existingRow) {
+                    // 如果行已存在，只更新价格，不影响用户输入
+                    const priceInput = existingRow.querySelector('input[data-type="price"]');
+                    if (priceInput) {
+                        priceInput.value = price.toFixed(2);
+                    }
+                    // 从map中移除，表示已处理
+                    existingRows.delete(name);
+                } else {
+                    // 如果行不存在，则添加新行
+                    const existingCustomBonuses = new Set();
+                    bonusTableBody.querySelectorAll('tr:not([data-autogen="true"])').forEach(row => {
+                        const kindInput = row.querySelector('input[data-type="kind"]');
+                        if (kindInput) existingCustomBonuses.add(kindInput.value.trim());
+                    });
+
+                    if (!existingCustomBonuses.has(name)) {
+                        const newIndex = bonusTableBody.rows.length;
+                        const newRow = bonusTableBody.insertRow();
+                        populateTableRow(newRow, 'bonus', newIndex, { kind: name, price: price.toFixed(2), isAutoGen: true });
+                    }
+                }
+            });
+
+            // 4. 移除不再需要的特典行（例如，如果一个盒子的特典价格被清空了）
+            existingRows.forEach(row => {
+                row.remove();
+            });
         }
+
 
         function updateAllPrices() {
             const rate = getExchangeRate();
@@ -1314,6 +1709,7 @@
                     avgPrice = numChars > 0 ? (itemPrice * rate - bonusPrice) / numChars : 0;
                 }
 
+                // 更新排表
                 table.querySelectorAll('tbody tr').forEach(row => {
                     const adjPrice = parseFloat(row.querySelector('.adj-price')?.value) || 0;
                     let finalPrice = 0;
@@ -1335,6 +1731,54 @@
 
                 const warningSpan = document.getElementById(`调价提醒-${typeKey}`);
                 if (warningSpan) warningSpan.textContent = Math.abs(totalAdj) > 0.01 ? `调价总和不为0 (${totalAdj.toFixed(2)})` : '';
+
+                // 新增：更新出荷配比表格
+                if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
+                    const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
+                    if (shippingTable) {
+                        let shippingTotalAdj = 0;
+                        let giftTotalValue = 0;
+
+                        // 计算赠品总价值
+                        shippingTable.querySelectorAll('tbody tr[data-isgift="true"]').forEach(row => {
+                            const giftPrice = parseFloat(row.querySelector('.gift-price')?.value) || 0;
+                            const distribution = getDistributionFromInputs(row);
+                            const totalQty = Object.values(distribution).reduce((sum, q) => sum + q, 0);
+                            giftTotalValue += giftPrice * totalQty;
+                        });
+
+                        // 计算调整后的均价
+                        const defaults = itemConfig.defaults;
+                        const itemPrice = parseFloat(defaults.price) || 0;
+                        const numChars = parseInt(defaults.chars) || 1;
+                        const bonusPrice = parseFloat(defaults.bonusPrice) || 0;
+
+                        let adjustedAvgPrice = avgPrice;
+                        if (numChars > 0) {
+                            const totalValue = itemPrice * rate - bonusPrice - giftTotalValue;
+                            adjustedAvgPrice = totalValue / numChars;
+                        }
+
+                        // 更新所有非赠品行的价格
+                        shippingTable.querySelectorAll('tbody tr').forEach(row => {
+                            if (row.dataset.isgift === 'true') {
+                                // 赠品行不显示均价和终价
+                                return;
+                            }
+
+                            const adjPrice = parseFloat(row.querySelector('.adj-price')?.value) || 0;
+                            row.querySelector('.shipping-avg-price').textContent = ceil2(adjustedAvgPrice).toFixed(2);
+                            const finalPrice = adjustedAvgPrice + adjPrice;
+                            row.querySelector('.shipping-final-price').textContent = ceil2(finalPrice).toFixed(2);
+                            shippingTotalAdj += adjPrice;
+                        });
+
+                        const shippingWarningSpan = document.getElementById(`调价提醒-shipping-${typeKey}`);
+                        if (shippingWarningSpan) {
+                            shippingWarningSpan.textContent = Math.abs(shippingTotalAdj) > 0.01 ? `调价总和不为0 (${shippingTotalAdj.toFixed(2)})` : '';
+                        }
+                    }
+                }
             });
 
             updateAllRemainingQuantities();
@@ -1372,81 +1816,257 @@
             outputDiv.textContent = billText;
         }
 
+        function calculateShippingPageBill(typeKey) {
+            const table = document.getElementById(`shipping-table-${typeKey}`);
+            const outputDiv = document.getElementById(`shipping-page-bill-${typeKey}`);
+            const bill = {};
+            if (!table || !outputDiv) return;
+
+            table.querySelectorAll('tbody tr').forEach(row => {
+                // 跳过赠品行
+                if (row.dataset.isgift === 'true') {
+                    return;
+                }
+
+                let priceForBilling = parseFloat(row.querySelector('.shipping-final-price').textContent);
+                const distribution = getDistributionFromInputs(row);
+
+                for (const name in distribution) {
+                    bill[name] = (bill[name] || 0) + (priceForBilling * distribution[name]);
+                }
+            });
+
+            let billText = '本页出荷肾表:\n';
+            if (Object.keys(bill).length === 0) billText += '暂无数据';
+            else Object.entries(bill).sort().forEach(([name, amount]) => billText += `${name}: ${amount.toFixed(2)} 元\n`);
+            outputDiv.textContent = billText;
+        }
+
         function calculateSummary() {
             updateAllPrices();
-            const totalBill = {};
-            const totalItems = {};
+
+            // 本次肾表和排表（基于排表）
+            const currentBill = {};
+            const currentItems = {};
+
+            // 实际肾表和排表（基于出荷配比 + 单领/特典 + 赠品）
+            const actualBill = {};
+            const actualItems = {};
+
             const rate = getExchangeRate();
             let totalCostToLeader = 0;
 
             Object.keys(itemTypes).forEach(typeKey => {
                 const itemConfig = itemTypes[typeKey];
-                const table = document.getElementById(`data-table-${typeKey}`);
-                if (!table) return;
 
-                // Accumulate total cost for leader
-                if (itemConfig.hasSets) { // Box types
+                // 计算团长成本
+                if (itemConfig.hasSets) {
                     const sets = parseInt(itemConfig.defaults.sets) || 0;
                     const price = parseFloat(itemConfig.defaults.price) || 0;
                     totalCostToLeader += sets * price * rate;
                 }
 
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    if (typeKey === 'single') {
-                        const price = parseFloat(row.querySelector('input[data-type="price"]').value) || 0;
-                        const dist = getDistributionFromInputs(row);
-                        const quantity = Object.values(dist).reduce((s, q) => s + q, 0);
-                        totalCostToLeader += price * quantity * rate;
+                // === 处理排表数据（用于计算“本次肾表/排表”） ===
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (table) {
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        if (typeKey === 'single') {
+                            const price = parseFloat(row.querySelector('input[data-type="price"]').value) || 0;
+                            const dist = getDistributionFromInputs(row);
+                            const quantity = Object.values(dist).reduce((s, q) => s + q, 0);
+                            totalCostToLeader += price * quantity * rate;
+                        }
+
+                        let priceForBilling = parseFloat(row.querySelector('.final-price').textContent);
+                        const distribution = getDistributionFromInputs(row);
+
+                        let itemName;
+                        const charName = row.querySelector('input[placeholder="角色名..."]')?.value.trim();
+                        const kindName = row.querySelector('input[data-type="kind"]')?.value.trim();
+
+                        if (typeKey === 'single') {
+                            itemName = charName && kindName ? `${charName}-${kindName}` : (charName || kindName || `项目${row.dataset.index}`);
+                        } else {
+                            itemName = charName || kindName || `项目${row.dataset.index}`;
+                        }
+
+                        for (const person in distribution) {
+                            currentBill[person] = (currentBill[person] || 0) + (priceForBilling * distribution[person]);
+                            if (!currentItems[person]) currentItems[person] = [];
+                            currentItems[person].push(`${itemConfig.key} - ${itemName} x ${distribution[person]}`);
+                        }
+                    });
+                }
+
+                // === 处理出荷数据（用于计算“实际肾表/排表”） ===
+                if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
+                    // 这是盒子类型，使用“出荷配比”表
+                    const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
+                    if (shippingTable) {
+                        shippingTable.querySelectorAll('tbody tr').forEach(row => {
+                            let priceForBilling = 0;
+                            let itemName = '';
+                            let isGift = row.dataset.isgift === 'true';
+
+                            if (isGift) {
+                                // 修正：处理赠品行
+                                priceForBilling = parseFloat(row.querySelector('.gift-price')?.value) || 0;
+                                itemName = row.querySelector('input[placeholder="赠品角色..."]')?.value.trim() || '赠品';
+                            } else {
+                                // 处理普通行
+                                priceForBilling = parseFloat(row.querySelector('.shipping-final-price').textContent);
+                                itemName = row.querySelector('input[placeholder="角色名..."]')?.value.trim() || `项目${row.dataset.index}`;
+                            }
+
+                            const distribution = getDistributionFromInputs(row);
+                            for (const person in distribution) {
+                                actualBill[person] = (actualBill[person] || 0) + (priceForBilling * distribution[person]);
+                                if (!actualItems[person]) actualItems[person] = [];
+                                const itemDisplayName = isGift ? `${itemName} (赠品)` : itemName;
+                                actualItems[person].push(`${itemConfig.key} - ${itemDisplayName} x ${distribution[person]}`);
+                            }
+                        });
                     }
+                } else if (typeKey === 'single' || typeKey === 'bonus') {
+                    // 这是单领或特典，使用它们自己的主排表
+                    const mainTable = document.getElementById(`data-table-${typeKey}`);
+                    if (mainTable) {
+                        mainTable.querySelectorAll('tbody tr').forEach(row => {
+                            let priceForBilling = parseFloat(row.querySelector('.final-price').textContent);
+                            const distribution = getDistributionFromInputs(row);
 
-                    let priceForBilling = parseFloat(row.querySelector('.final-price').textContent);
-                    const distribution = getDistributionFromInputs(row);
+                            let itemName;
+                            const charName = row.querySelector('input[placeholder="角色名..."]')?.value.trim();
+                            const kindName = row.querySelector('input[data-type="kind"]')?.value.trim();
 
-                    let itemName;
-                    const charName = row.querySelector('input[placeholder="角色名..."]')?.value.trim();
-                    const kindName = row.querySelector('input[data-type="kind"]')?.value.trim();
+                            if (typeKey === 'single') {
+                                itemName = charName && kindName ? `${charName}-${kindName}` : (charName || kindName || `项目${row.dataset.index}`);
+                            } else { // bonus
+                                itemName = kindName || `项目${row.dataset.index}`;
+                            }
 
-                    if (typeKey === 'single') {
-                        itemName = charName && kindName ? `${charName}-${kindName}` : (charName || kindName || `项目${row.dataset.index}`);
-                    } else {
-                        itemName = charName || kindName || `项目${row.dataset.index}`;
+                            for (const person in distribution) {
+                                actualBill[person] = (actualBill[person] || 0) + (priceForBilling * distribution[person]);
+                                if (!actualItems[person]) actualItems[person] = [];
+                                actualItems[person].push(`${itemConfig.key} - ${itemName} x ${distribution[person]}`);
+                            }
+                        });
                     }
-
-                    for (const person in distribution) {
-                        totalBill[person] = (totalBill[person] || 0) + (priceForBilling * distribution[person]);
-                        if (!totalItems[person]) totalItems[person] = [];
-                        totalItems[person].push(`${itemConfig.key} - ${itemName} x ${distribution[person]}`);
-                    }
-                });
+                }
             });
 
-            // Display Total Bill
+            // === 显示本次肾表 ===
             const billOutput = document.getElementById('total-bill-output');
             let billText = '';
-            let actualTotal = 0;
-            if (Object.keys(totalBill).length > 0) {
-                Object.entries(totalBill).sort().forEach(([person, amount]) => {
+            let currentTotal = 0;
+            if (Object.keys(currentBill).length > 0) {
+                Object.entries(currentBill).sort().forEach(([person, amount]) => {
                     billText += `${person}: ${amount.toFixed(2)} 元\n`;
-                    actualTotal += amount;
+                    currentTotal += amount;
                 });
             } else {
                 billText = '请先在各分表中填写排表信息。';
             }
             billOutput.textContent = billText;
 
-            // Display Total Items
+            // === 显示本次排表 ===
             const itemsOutput = document.getElementById('total-items-output');
             let itemsText = '';
-            if (Object.keys(totalItems).length > 0) {
-                Object.keys(totalItems).sort().forEach(person => {
-                    itemsText += `--- ${person} ---\n${totalItems[person].join('\n')}\n\n`;
+            if (Object.keys(currentItems).length > 0) {
+                Object.keys(currentItems).sort().forEach(person => {
+                    itemsText += `--- ${person} ---\n${currentItems[person].join('\n')}\n\n`;
                 });
             } else {
                 itemsText = '请先在各分表中填写排表信息。';
             }
             itemsOutput.textContent = itemsText;
 
-            // Display Check Total
+            // === 显示实际肾表 ===
+            const actualBillOutput = document.getElementById('actual-bill-output');
+            let actualBillHTML = '';
+            let actualTotal = 0;
+            if (Object.keys(actualBill).length > 0) {
+                Object.entries(actualBill).sort().forEach(([person, amount]) => {
+                    actualBillHTML += `<div class="person-bill-item"><strong>${person}</strong>: ${amount.toFixed(2)} 元</div>`;
+                    actualTotal += amount;
+                });
+            } else {
+                actualBillHTML = '<p style="color: var(--light-text-color); text-align: center; font-style: italic;">请先在出荷配比/单领/特典中填写信息。</p>';
+            }
+            actualBillOutput.innerHTML = actualBillHTML;
+
+            // === 显示实际排表 ===
+            const actualItemsOutput = document.getElementById('actual-items-output');
+            let actualItemsHTML = '';
+            if (Object.keys(actualItems).length > 0) {
+                Object.keys(actualItems).sort().forEach(person => {
+                    actualItemsHTML += `<div class="person-items-section">
+                        <div class="person-name">--- ${person} ---</div>
+                        ${actualItems[person].map(item => `<div class="item-line">${item}</div>`).join('')}
+                    </div>`;
+                });
+            } else {
+                actualItemsHTML = '<p style="color: var(--light-text-color); text-align: center; font-style: italic;">请先在出荷配比/单领/特典中填写信息。</p>';
+            }
+            actualItemsOutput.innerHTML = actualItemsHTML;
+
+            // === 计算退补 ===
+            const refundOutput = document.getElementById('refund-output');
+            let refundHTML = '';
+            const allPeople = new Set([...Object.keys(currentBill), ...Object.keys(actualBill)]);
+
+            if (allPeople.size > 0) {
+                const refundList = [];
+                const paymentList = [];
+
+                allPeople.forEach(person => {
+                    const current = currentBill[person] || 0;
+                    const actual = actualBill[person] || 0;
+                    const diff = current - actual;
+
+                    if (diff > 0.01) {
+                        refundList.push({ person, amount: diff });
+                    } else if (diff < -0.01) {
+                        paymentList.push({ person, amount: Math.abs(diff) });
+                    }
+                });
+
+                if (refundList.length === 0 && paymentList.length === 0) {
+                    refundHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--success-color); font-weight: bold;">✅ 无需退补，所有金额一致！</div>';
+                } else {
+                    // 退款列
+                    let refundColumn = '<div class="refund-column">';
+                    if (refundList.length > 0) {
+                        refundList.sort((a, b) => b.amount - a.amount);
+                        refundList.forEach(({ person, amount }) => {
+                            refundColumn += `<div class="refund-item">${person}: ${amount.toFixed(2)} 元</div>`;
+                        });
+                    } else {
+                        refundColumn += '<p style="text-align: center; color: var(--light-text-color); font-style: italic;">暂无</p>';
+                    }
+                    refundColumn += '</div>';
+
+                    // 补款列
+                    let paymentColumn = '<div class="payment-column">';
+                    if (paymentList.length > 0) {
+                        paymentList.sort((a, b) => b.amount - a.amount);
+                        paymentList.forEach(({ person, amount }) => {
+                            paymentColumn += `<div class="payment-item">${person}: ${amount.toFixed(2)} 元</div>`;
+                        });
+                    } else {
+                        paymentColumn += '<p style="text-align: center; color: var(--light-text-color); font-style: italic;">暂无</p>';
+                    }
+                    paymentColumn += '</div>';
+
+                    refundHTML = refundColumn + paymentColumn;
+                }
+            } else {
+                refundHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--light-text-color); font-style: italic;">请先完成肾表计算。</div>';
+            }
+            refundOutput.innerHTML = refundHTML;
+
+
+            // === 显示肾额核对 ===
             document.getElementById('expected-total').textContent = totalCostToLeader.toFixed(2);
             document.getElementById('actual-total').textContent = actualTotal.toFixed(2);
             const diff = totalCostToLeader - actualTotal;
@@ -1462,38 +2082,65 @@
             updateRemainingTable();
         }
 
+
         function updateAllRemainingQuantities() {
             Object.keys(itemTypes).forEach(typeKey => {
                 const itemConfig = itemTypes[typeKey];
+
+                // 更新排表的余量
                 const table = document.getElementById(`data-table-${typeKey}`);
-                if (!table || (itemConfig.isDynamicTabContent && typeKey !== 'bonus')) return;
-
-                let baseQuantity = 0;
-                if (itemConfig.hasSets) { // Box Types
-                    baseQuantity = parseInt(itemConfig.defaults.sets) || 0;
-                } else if (typeKey === 'bonus') {
-                    baseQuantity = 1;
-                }
-
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    const distribution = getDistributionFromInputs(row);
-                    const totalDistributed = Object.values(distribution).reduce((sum, q) => sum + q, 0);
-
-                    let specificBaseQty = baseQuantity;
-                    if (typeKey === 'bonus' && row.dataset.autogen === 'true') {
-                        const bonusName = row.querySelector('input[data-type="kind"]')?.value;
-                        const sourceItemKey = Object.keys(itemTypes).find(k => itemTypes[k].defaults?.name + '特典' === bonusName);
-                        if (sourceItemKey) {
-                            specificBaseQty = parseInt(itemTypes[sourceItemKey].defaults.sets) || 0;
-                        } else {
-                            specificBaseQty = 0; // cannot find source
-                        }
+                // 修正：允许为 'bonus' 类型计算余量，解决了特典数量显示N/A的问题
+                if (table && (!itemConfig.isDynamicTabContent || typeKey === 'bonus')) {
+                    let baseQuantity = 0;
+                    if (itemConfig.hasSets) {
+                        baseQuantity = parseInt(itemConfig.defaults.sets) || 0;
+                    } else if (typeKey === 'bonus') {
+                        // 对于手动添加的特典，默认基数为1
+                        baseQuantity = 1;
                     }
 
-                    const remaining = specificBaseQty - totalDistributed;
-                    const remainingCell = row.querySelector('.remaining-quantity');
-                    if (remainingCell) remainingCell.textContent = remaining;
-                });
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        const distribution = getDistributionFromInputs(row);
+                        const totalDistributed = Object.values(distribution).reduce((sum, q) => sum + q, 0);
+
+                        let specificBaseQty = baseQuantity;
+                        // 对于自动生成的特典，其基数应等于对应盒子的盒数
+                        if (typeKey === 'bonus' && row.dataset.autogen === 'true') {
+                            const bonusName = row.querySelector('input[data-type="kind"]')?.value;
+                            const sourceItemKey = Object.keys(itemTypes).find(k => itemTypes[k].defaults?.name + '特典' === bonusName);
+                            if (sourceItemKey) {
+                                specificBaseQty = parseInt(itemTypes[sourceItemKey].defaults.sets) || 0;
+                            } else {
+                                specificBaseQty = 0; // 如果找不到源盒子，则基数为0
+                            }
+                        }
+
+                        const remaining = specificBaseQty - totalDistributed;
+                        const remainingCell = row.querySelector('.remaining-quantity');
+                        if (remainingCell) {
+                            remainingCell.textContent = remaining;
+                        }
+                    });
+                }
+
+                // 新增：更新出荷配比的余量
+                if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
+                    const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
+                    if (shippingTable) {
+                        const baseQuantity = parseInt(itemConfig.defaults.sets) || 0;
+
+                        shippingTable.querySelectorAll('tbody tr').forEach(row => {
+                            if (row.classList.contains('gift-marker-row')) return;
+
+                            const distribution = getDistributionFromInputs(row);
+                            const totalDistributed = Object.values(distribution).reduce((sum, q) => sum + q, 0);
+                            const remaining = baseQuantity - totalDistributed;
+
+                            const remainingCell = row.querySelector('.shipping-remaining-quantity');
+                            if (remainingCell) remainingCell.textContent = remaining;
+                        });
+                    }
+                }
             });
         }
 
@@ -1783,8 +2430,9 @@
             allMemberNames.clear();
             allKindNames.clear();
 
-            // 扫描所有角色名输入框（包括盒子和单领的）
-            document.querySelectorAll('input[placeholder="角色名..."]').forEach(input => {
+            // 扫描所有角色名输入框（包括盒子、单领和赠品的）
+            // 修正：增加了对 'input[placeholder="赠品角色..."]' 的扫描
+            document.querySelectorAll('input[placeholder="角色名..."], input[placeholder="赠品角色..."]').forEach(input => {
                 if (input.value.trim()) {
                     allCharacterNames.add(input.value.trim());
                 }
@@ -1805,8 +2453,7 @@
             });
         }
 
-
-        function setupAutocomplete() {
+               function setupAutocomplete() {
             const suggestionBox = document.getElementById('autocomplete-suggestions');
             let activeSuggestionInput = null;
             let activeSuggestionIndex = -1;
@@ -1889,7 +2536,8 @@
                 const target = e.target;
                 let nameSet = null;
 
-                if (target.matches('input[placeholder="角色名..."]')) {
+                // 修正：增加了对 'input[placeholder="赠品角色..."]' 的匹配
+                if (target.matches('input[placeholder="角色名..."], input[placeholder="赠品角色..."]')) {
                     nameSet = allCharacterNames;
                 } else if (target.matches('input.dist-name')) {
                     nameSet = allMemberNames;
@@ -1907,7 +2555,8 @@
             document.addEventListener('input', (e) => {
                 if (e.target === activeSuggestionInput) {
                     let nameSet = null;
-                    if (e.target.matches('input[placeholder="角色名..."]')) {
+                    // 修正：增加了对 'input[placeholder="赠品角色..."]' 的匹配
+                    if (e.target.matches('input[placeholder="角色名..."], input[placeholder="赠品角色..."]')) {
                         nameSet = allCharacterNames;
                     } else if (e.target.matches('input.dist-name')) {
                         nameSet = allMemberNames;
@@ -1927,7 +2576,8 @@
             });
 
             document.addEventListener('blur', (e) => {
-                if (e.target.matches('input[placeholder="角色名..."]') ||
+                // 修正：增加了对 'input[placeholder="赠品角色..."]' 的匹配
+                if (e.target.matches('input[placeholder="角色名..."], input[placeholder="赠品角色..."]') ||
                     e.target.matches('input.dist-name') ||
                     e.target.matches('#data-table-single input[data-type="kind"]')) {
                     updateNameCaches();
@@ -1944,7 +2594,6 @@
             window.addEventListener('scroll', updatePositionOnScrollOrResize, true);
             window.addEventListener('resize', updatePositionOnScrollOrResize);
         }
-
 
         function copyToClipboard(elementId, buttonElement) {
             const element = document.getElementById(elementId);
