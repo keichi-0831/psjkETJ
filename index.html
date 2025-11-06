@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>烤谷开团打表机</title>
+    <title>日谷开团打表机</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
@@ -511,13 +511,84 @@
             background-color: var(--highlight-bg);
             color: var(--secondary-color);
         }
+
+        /* --- 皮肤更换器 --- */
+        .skin-changer {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            z-index: 1001;
+            text-align: right;
+        }
+
+        #skin-button {
+            background-color: rgba(128, 128, 128, 0.3);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            opacity: 0.7;
+        }
+
+        #skin-button:hover {
+            background-color: rgba(128, 128, 128, 0.5);
+            opacity: 1;
+        }
+
+        #skin-options {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            margin-top: 5px;
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s;
+        }
+
+        #skin-options.hidden {
+            display: none;
+        }
+
+        .skin-color-circle {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .skin-color-circle:hover {
+            transform: scale(1.15);
+        }
+
+        .skin-color-circle.active {
+            border-color: var(--primary-color);
+            transform: scale(1.15);
+        }
     </style>
 </head>
 
 <body>
 
+    <div class="skin-changer">
+        <button id="skin-button">skin</button>
+        <div id="skin-options" class="hidden">
+            <!-- 主题颜色选项会由JavaScript动态生成在这里 -->
+        </div>
+    </div>
+
     <div class="container">
-        <h1>烤谷开团打表机 💖</h1>
+        <h1>日谷开团打表机 💖</h1>
         <p class="footer-credit" style="margin-top: -10px; margin-bottom: 20px;">all by keichi</p>
 
         <div class="action-buttons">
@@ -658,8 +729,113 @@
         };
         let orderedTypesForTabs = ['boxA', 'boxB', 'single', 'bonus'];
 
+        // --- 皮肤更换器逻辑 ---
+        const THEME_STORAGE_KEY = 'keichiKiguTheme-v1';
+        const themes = {
+            'original': {
+                name: '1',
+                colors: {
+                    '--bg-color': '#fff9f0',
+                    '--card-bg': '#feeede',
+                    '--primary-color': '#c08585',
+                    '--primary-hover-color': '#a87171',
+                    '--secondary-color': '#c08585',
+                    '--accent-color': '#c08585',
+                    '--accent-hover-color': '#a87171',
+                    '--success-color': '#7a9b76',
+                    '--success-hover-color': '#678563',
+                    '--text-color': '#5c4e4e',
+                    '--light-text-color': '#8c7f7f',
+                    '--border-color': '#e6d8c1',
+                    '--highlight-bg': '#fff5e8',
+                }
+            },
+            'blue-pink': {
+                name: '2',
+                colors: {
+                    '--bg-color': '#eaf2f8',
+                    '--card-bg': '#ffffff',
+                    '--primary-color': '#97c6da', // 更清晰的蓝色
+                    '--primary-hover-color': '#6687cc',
+                    '--secondary-color': '#edaabc', // 更清晰的粉红色/红色系标题
+                    '--accent-color': '#d78996', // 重置/删除按钮
+                    '--accent-hover-color': '#ee6593',
+                    '--success-color': '#f2d4ec', 
+                    '--success-hover-color': '#e6a8d7',
+                    '--text-color': '#34495e', // 大幅加深的文字颜色
+                    '--light-text-color': '#7f8c8d', // 大幅加深的次要文字颜色
+                    '--border-color': '#dce4ec',
+                    '--highlight-bg': '#fff0f0', // 输入框内淡淡的粉色
+                }
+            }
+            // 未来可以在这里添加更多主题
+        };
+
+        function applyTheme(themeName) {
+            const theme = themes[themeName];
+            if (!theme) {
+                console.error(`主题 "${themeName}" 未找到。`);
+                return;
+            }
+
+            const root = document.documentElement;
+            for (const [variable, value] of Object.entries(theme.colors)) {
+                root.style.setProperty(variable, value);
+            }
+
+            // 更新激活状态的圆圈
+            document.querySelectorAll('.skin-color-circle').forEach(circle => {
+                circle.classList.toggle('active', circle.dataset.theme === themeName);
+            });
+
+            localStorage.setItem(THEME_STORAGE_KEY, themeName);
+        }
+
+        function initSkinChanger() {
+            const skinButton = document.getElementById('skin-button');
+            const skinOptions = document.getElementById('skin-options');
+
+            if (!skinButton || !skinOptions) return;
+
+            // 动态生成颜色选项
+            for (const [key, theme] of Object.entries(themes)) {
+                const circle = document.createElement('div');
+                circle.className = 'skin-color-circle';
+                // 圆圈的颜色使用主题的背景色来代表
+                circle.style.backgroundColor = theme.colors['--bg-color'];
+                circle.title = theme.name;
+                circle.dataset.theme = key;
+                circle.addEventListener('click', () => {
+                    applyTheme(key);
+                });
+                skinOptions.appendChild(circle);
+            }
+
+            // 点击按钮时切换显示/隐藏
+            skinButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                skinOptions.classList.toggle('hidden');
+            });
+
+            // 点击页面其他地方时隐藏
+            document.addEventListener('click', (e) => {
+                if (!skinOptions.contains(e.target) && !skinOptions.classList.contains('hidden')) {
+                    skinOptions.classList.add('hidden');
+                }
+            });
+
+            // 加载并应用已保存的主题
+            const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+            // 如果有已保存的主题，则应用它；否则使用默认的 'original' 主题
+            if (savedTheme && themes[savedTheme]) {
+                applyTheme(savedTheme);
+            } else {
+                applyTheme('original');
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
+            initSkinChanger();
             currentSlotName = localStorage.getItem(ACTIVE_SLOT_KEY) || DEFAULT_SLOT_NAME;
             document.getElementById('current-slot-display').textContent = `当前存档: ${currentSlotName}`;
 
@@ -1516,7 +1692,7 @@
                 const ws = XLSX.utils.aoa_to_sheet(sheetsData[sheetName]);
                 XLSX.utils.book_append_sheet(wb, ws, sheetName);
             }
-            downloadExcelWorkbook(wb, `烤谷打表机-排表.xlsx`);
+            downloadExcelWorkbook(wb, `日谷打表机-排表.xlsx`);
         }
         function exportSummaryData() {
             const sheetsData = getSummaryDataForExport();
@@ -1525,7 +1701,7 @@
                 const ws = XLSX.utils.aoa_to_sheet(sheetsData[sheetName]);
                 XLSX.utils.book_append_sheet(wb, ws, sheetName);
             }
-            downloadExcelWorkbook(wb, `烤谷打表机-肾表.xlsx`);
+            downloadExcelWorkbook(wb, `日谷打表机-肾表.xlsx`);
         }
         function exportAllData() {
             const wb = XLSX.utils.book_new();
@@ -1533,7 +1709,7 @@
             for (const name in tablesSheets) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(tablesSheets[name]), name);
             const summarySheets = getSummaryDataForExport();
             for (const name in summarySheets) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summarySheets[name]), name);
-            downloadExcelWorkbook(wb, `烤谷打表机-全部数据.xlsx`);
+            downloadExcelWorkbook(wb, `日谷打表机-全部数据.xlsx`);
         }
 
         function exportAllDataAsJson() {
@@ -1602,25 +1778,25 @@
         let allMemberNames = new Set();
         let allKindNames = new Set();
 
-               function updateNameCaches() {
+        function updateNameCaches() {
             allCharacterNames.clear();
             allMemberNames.clear();
             allKindNames.clear();
-            
+
             // 扫描所有角色名输入框（包括盒子和单领的）
             document.querySelectorAll('input[placeholder="角色名..."]').forEach(input => {
                 if (input.value.trim()) {
                     allCharacterNames.add(input.value.trim());
                 }
             });
-            
+
             // 扫描所有团员名输入框
             document.querySelectorAll('input.dist-name').forEach(input => {
                 if (input.value.trim()) {
                     allMemberNames.add(input.value.trim());
                 }
             });
-            
+
             // 扫描所有种类输入框（单领表格中的）
             document.querySelectorAll('#data-table-single input[data-type="kind"]').forEach(input => {
                 if (input.value.trim()) {
@@ -1630,7 +1806,7 @@
         }
 
 
-            function setupAutocomplete() {
+        function setupAutocomplete() {
             const suggestionBox = document.getElementById('autocomplete-suggestions');
             let activeSuggestionInput = null;
             let activeSuggestionIndex = -1;
