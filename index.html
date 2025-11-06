@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>烤谷开团打表机</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+
+        :root {
+            /* 色彩搭配 (低饱和度) */
+            --bg-color: #fff9f0;
+            --card-bg: #feeede;
+            --primary-color: #c08585;
+            --primary-hover-color: #a87171;
+            --secondary-color: #c08585;
+            /* 同主色 */
+            --accent-color: #c08585;
+            /* 同主色，用于删除、警示 */
+            --accent-hover-color: #a87171;
+            --success-color: #7a9b76;
+            --success-hover-color: #678563;
+            --text-color: #5c4e4e;
+            --light-text-color: #8c7f7f;
+            --border-color: #e6d8c1;
+            --highlight-bg: #fff5e8;
+
+            /* 设计风格 */
+            --shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Nunito', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1300px;
+        }
+
+        h1,
+        h2 {
+            color: var(--secondary-color);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--light-text-color);
+        }
+
+        .input-group input[type="number"],
+        .input-group input[type="text"] {
+            width: 100%;
+            max-width: 200px;
+            /* 控制配置区输入框最大宽度 */
+            padding: 8px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-family: inherit;
+            font-size: 1em;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+            background-color: var(--highlight-bg);
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(192, 133, 133, 0.3);
+        }
+
+        .result-field {
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 1.1em;
+            padding: 8px 10px;
+            background-color: var(--highlight-bg);
+            border-radius: var(--border-radius);
+            display: inline-block;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .info-text {
+            font-size: 0.9em;
+            color: var(--light-text-color);
+            margin-top: 8px;
+            background: var(--highlight-bg);
+            padding: 8px;
+            border-radius: var(--border-radius);
+            white-space: pre-wrap;
+        }
+
+        .warning-text {
+            font-size: 0.8em;
+            color: var(--accent-color);
+            margin-left: 5px;
+        }
+
+        button,
+        .button,
+        .add-row-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        button:hover,
+        .button:hover,
+        .add-row-btn:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        .add-row-btn {
+            background-color: var(--highlight-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+
+        .add-row-btn:hover {
+            background-color: #f7e3a2;
+        }
+
+        .remove-btn-text,
+        .add-btn-text {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5em;
+            font-weight: bold;
+            padding: 0 5px;
+            vertical-align: middle;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .remove-btn-text {
+            color: var(--accent-color);
+        }
+
+        .add-btn-text {
+            color: var(--success-color);
+        }
+
+        .remove-btn-text:hover {
+            color: var(--accent-hover-color);
+        }
+
+        .add-btn-text:hover {
+            color: var(--success-hover-color);
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-button {
+            background-color: var(--highlight-bg);
+            color: var(--text-color);
+        }
+
+        .tab-button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .item-tab-button.add-new-item-type-btn {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .item-tab-button.add-new-item-type-btn:hover {
+            background-color: var(--success-hover-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        table {
+            table-layout: fixed;
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: var(--highlight-bg);
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* --- 核心：表格内输入框宽度控制 --- */
+        td input[type="text"],
+        td input[type="number"] {
+            width: 100%;
+            box-sizing: border-box;
+            /* 关键：让padding不增加宽度 */
+            padding: 8px 10px;
+            margin: 0 auto;
+            /* 在单元格内居中 */
+        }
+
+        td.col-name input[type="text"] {
+            max-width: 160px;
+            /* 角色名/种类等文本框的最大宽度 */
+        }
+
+        td.col-value input[type="number"] {
+            max-width: 80px;
+            /* 调价/原价等数字框的最大宽度 */
+        }
+
+        /* --- 结束：表格内输入框宽度控制 --- */
+
+
+        th.col-name,
+        td.col-name {
+            min-width: 120px;
+        }
+
+        th.col-value,
+        td.col-value {
+            width: 90px;
+        }
+
+        th.col-distribution,
+        td.col-distribution {
+            min-width: 190px;
+        }
+
+        th.col-operation,
+        td.col-operation {
+            width: 70px;
+        }
+
+        .table-scroll-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+        }
+
+        .table-scroll-wrapper table {
+            min-width: 780px;
+            border: none;
+        }
+
+        .distribution-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .dist-entry {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .dist-entry input[type="text"] {
+            flex: 2;
+            min-width: 70px;
+            padding: 6px 8px;
+            box-sizing: border-box;
+        }
+
+        .dist-entry input[type="number"] {
+            flex: 1;
+            min-width: 50px;
+            padding: 6px 8px;
+            box-sizing: border-box;
+        }
+
+        .item-config-header {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            align-items: center;
+        }
+
+        .item-config-header .input-group {
+            margin: 0;
+        }
+
+        #total-bill-output,
+        #total-items-output,
+        #check-total-output {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--highlight-bg);
+            border-radius: var(--border-radius);
+            white-space: pre-wrap;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .calc-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .footer-credit {
+            font-style: italic;
+            opacity: 0.6;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            color: var(--light-text-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #archive-button,
+        #load-button,
+        #data-sync-button {
+            background-color: var(--success-color);
+        }
+
+        #archive-button:hover,
+        #load-button:hover,
+        #data-sync-button:hover {
+            background-color: var(--success-hover-color);
+        }
+
+        #reset-button {
+            background-color: var(--accent-color);
+        }
+
+        #reset-button:hover {
+            background-color: var(--accent-hover-color);
+        }
+
+        #export-table-button {
+            background-color: var(--primary-color);
+        }
+
+        #export-table-button:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        #export-options-modal,
+        #data-sync-modal,
+        #load-modal {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-bg);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+            z-index: 1000;
+            border-radius: var(--border-radius);
+            width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #export-options-modal h3,
+        #data-sync-modal h3,
+        #load-modal h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .modal-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            display: block;
+            margin: 10px 0;
+            width: 100%;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+
+        .modal-button:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        #export-options-modal .cancel-button,
+        #data-sync-modal .cancel-button,
+        #load-modal .cancel-button {
+            background-color: var(--light-text-color);
+        }
+
+        #export-options-modal .cancel-button:hover,
+        #data-sync-modal .cancel-button:hover,
+        #load-modal .cancel-button:hover {
+            background-color: #555555;
+        }
+
+        /* Autocomplete Box */
+        #autocomplete-suggestions {
+            display: none;
+            position: fixed;
+            border: 1px solid var(--border-color);
+            background-color: #fffaf0;
+            /* A bit lighter for popups */
+            z-index: 1002;
+            max-height: 150px;
+            overflow-y: auto;
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+        }
+
+        .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            color: var(--text-color);
+            font-size: 0.9em;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.active {
+            background-color: var(--highlight-bg);
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>烤谷开团打表机 💖</h1>
+        <p class="footer-credit" style="margin-top: -10px; margin-bottom: 20px;">all by keichi</p>
+
+        <div class="action-buttons">
+            <button id="archive-button" onclick="archiveData()">💾 存储档案</button>
+            <button id="load-button" onclick="showLoadModal()">📂 读取档案</button>
+            <button id="reset-button" onclick="resetCurrentSlotData()">🔄 重置数据</button>
+            <button id="data-sync-button" onclick="showDataSyncModal()">📡 数据互通</button>
+            <button id="export-table-button" onclick="showExportOptions()">📤 导出表格</button>
+        </div>
+
+        <p id="current-slot-display"
+            style="color: var(--primary-color); font-size: 0.9em; font-weight: bold; margin-bottom: 2px; text-align: left;">
+            当前存档: -</p>
+        <p id="last-auto-save-time"
+            style="color: var(--light-text-color); font-size: 0.9em; font-style: italic; margin-bottom: 10px; text-align: left;">
+            上次自动保存时间: 尚未自动保存</p>
+
+        <div class="card">
+            <div class="input-group" style="display: flex; align-items: center; gap: 10px; margin: 0;">
+                <label for="exchange-rate" style="font-weight: bold; margin: 0;">当期汇率：</label>
+                <input type="number" id="exchange-rate" placeholder="55" style="width: 80px; max-width: 80px;"
+                    oninput="updateAllPrices()">
+                <span>汇</span>
+                <span class="info-text" style="margin: 0; padding: 5px 8px; font-size: 0.8em;">(例: 输入55汇 = 该价格 *
+                    0.055)</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('tables-section')">排表</button>
+            <button class="tab-button" onclick="showTab('remaining-section')">余量</button>
+            <button class="tab-button" onclick="showTab('summary-section')">肾表</button>
+        </div>
+
+        <section id="tables-section" class="card tab-content active">
+            <h2>【排表】</h2>
+            <div class="tabs" id="item-tabs"></div>
+            <div id="item-tables-container"></div>
+        </section>
+
+        <section id="remaining-section" class="card tab-content">
+            <h2>【余量】</h2>
+            <button onclick="updateRemainingTable()">🔄 更新余量</button>
+            <div class="copy-button-container" style="position: relative; margin-top: 10px;">
+                <button class="copy-button" onclick="copyToClipboard('remaining-output', this)"
+                    style="position: absolute; top: 10px; right: 10px; z-index: 1;">📋 复制</button>
+                <div id="remaining-output" style="margin-top: 20px;">
+                    <p style="color: var(--light-text-color); text-align: center; font-style: italic;">点击上方按钮更新余量表格...
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="summary-section" class="card tab-content">
+            <h2>【肾表】</h2>
+            <button onclick="calculateSummary()">🚀 计算总肾表 & 总排表</button>
+            <div
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div class="calc-section">
+                    <h3>总肾表</h3>
+                    <div class="copy-button-container" style="position: relative;">
+                        <button class="copy-button" onclick="copyToClipboard('total-bill-output', this)"
+                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
+                        <div id="total-bill-output">点击按钮计算...</div>
+                    </div>
+                </div>
+                <div class="calc-section">
+                    <h3>总排表</h3>
+                    <div class="copy-button-container" style="position: relative;">
+                        <button class="copy-button" onclick="copyToClipboard('total-items-output', this)"
+                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
+                        <div id="total-items-output">点击按钮计算...</div>
+                    </div>
+                </div>
+                <div class="calc-section">
+                    <h3>肾额核对</h3>
+                    <div id="check-total-output">
+                        <p>应付总额: <span id="expected-total" class="result-field">0.00</span> 元</p>
+                        <p>实收总额: <span id="actual-total" class="result-field">0.00</span> 元</p>
+                        <p id="check-diff" class="info-text"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <p class="footer-credit">all by keichi</p>
+
+        <div id="export-options-modal">
+            <h3>选择导出内容 (Excel)</h3>
+            <button class="modal-button" onclick="exportTablesData(); hideExportOptions();">导出排表</button>
+            <button class="modal-button" onclick="exportSummaryData(); hideExportOptions();">导出肾表</button>
+            <button class="modal-button" onclick="exportAllData(); hideExportOptions();">导出全部</button>
+            <button class="modal-button cancel-button" onclick="hideExportOptions();">取消</button>
+        </div>
+
+        <div id="data-sync-modal">
+            <h3>数据互通</h3>
+            <button class="modal-button" onclick="exportAllDataAsJson(); hideDataSyncModal();">导出全部数据 (JSON)</button>
+            <input type="file" id="json-import-file" accept=".json" style="display: none;"
+                onchange="handleJsonFileImport(event)">
+            <button class="modal-button" onclick="document.getElementById('json-import-file').click();">导入数据
+                (JSON)</button>
+            <button class="modal-button cancel-button" onclick="hideDataSyncModal();">取消</button>
+        </div>
+
+        <div id="load-modal">
+            <h3>选择要读取的档案</h3>
+            <div id="load-modal-list"></div>
+            <button class="modal-button cancel-button" onclick="hideLoadModal()">取消</button>
+        </div>
+    </div>
+
+    <div id="autocomplete-suggestions"></div>
+
+    <script>
+        const SAVE_MANIFEST_KEY = 'keichiKiguSaves-v2.1';
+        const ACTIVE_SLOT_KEY = 'keichiKiguActiveSlot-v2.1';
+        const DEFAULT_SLOT_NAME = '默认存档';
+        const LAST_AUTO_SAVE_TIME_KEY_PREFIX = 'keichiKiguLastAutoSave-v2.1_';
+        let currentSlotName = DEFAULT_SLOT_NAME;
+        let dynamicItemCounter = 0;
+        let lastAutoSaveTimestamp = null;
+
+        let itemTypes = {};
+        const initialItemTypes = {
+            'boxA': {
+                id_prefix: 'boxA', key: '盒A',
+                defaults: { name: '盒A', price: 2750, chars: 8, sets: 0, bonusPrice: 0 },
+                hasChars: true, hasSets: true, setsLabel: '盒数', hasBonusPrice: true, isDynamic: false,
+            },
+            'boxB': {
+                id_prefix: 'boxB', key: '盒B',
+                defaults: { name: '盒B', price: 2750, chars: 8, sets: 0, bonusPrice: 0 },
+                hasChars: true, hasSets: true, setsLabel: '盒数', hasBonusPrice: true, isDynamic: false,
+            },
+            'single': { id_prefix: 'single', key: '单领', isDynamicTabContent: true, isDynamic: false },
+            'bonus': { id_prefix: 'bonus', key: '特典', isDynamicTabContent: true, isDynamic: false }
+        };
+        let orderedTypesForTabs = ['boxA', 'boxB', 'single', 'bonus'];
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            currentSlotName = localStorage.getItem(ACTIVE_SLOT_KEY) || DEFAULT_SLOT_NAME;
+            document.getElementById('current-slot-display').textContent = `当前存档: ${currentSlotName}`;
+
+            updateLastAutoSaveTimeDisplay();
+            loadData();
+
+            showTab('tables-section');
+            if (orderedTypesForTabs.length > 0) {
+                const firstValidTab = orderedTypesForTabs.find(key => itemTypes[key]);
+                if (firstValidTab) showItemTab(firstValidTab);
+            }
+
+            setInterval(() => saveData(true), 1000);
+            window.addEventListener('beforeunload', () => saveData(true, false));
+
+            setupAutocomplete();
+        });
+
+        function getExchangeRate() {
+            return (parseFloat(document.getElementById('exchange-rate').value) || 0) * 0.001;
+        }
+
+        function updateLastAutoSaveTimeDisplay() {
+            const displayElement = document.getElementById('last-auto-save-time');
+            const savedTimestampStr = localStorage.getItem(LAST_AUTO_SAVE_TIME_KEY_PREFIX + currentSlotName);
+
+            if (savedTimestampStr) {
+                lastAutoSaveTimestamp = new Date(savedTimestampStr);
+            } else {
+                lastAutoSaveTimestamp = null;
+            }
+
+            if (displayElement && lastAutoSaveTimestamp) {
+                const timeString = lastAutoSaveTimestamp.toLocaleString('zh-CN', {
+                    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+                }).replace(/\//g, '-');
+                displayElement.textContent = `上次自动保存时间: ${timeString}`;
+            } else if (displayElement) {
+                displayElement.textContent = '上次自动保存时间: 尚未自动保存';
+            }
+        }
+
+        function saveData(isAutoSave = false) {
+            const data = {
+                exchangeRate: document.getElementById('exchange-rate').value,
+                tables: {},
+                itemConfigs: {},
+                dynamicTypeKeys: [],
+                orderedTypesForTabs: [...orderedTypesForTabs],
+                dynamicItemCounter: dynamicItemCounter,
+            };
+
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                if (!itemConfig) return;
+
+                if (!itemConfig.isDynamicTabContent) {
+                    data.itemConfigs[typeKey] = {
+                        ...itemConfig,
+                        defaults: itemConfig.defaults || {}
+                    };
+                }
+                if (itemConfig.isDynamic) {
+                    data.dynamicTypeKeys.push(typeKey);
+                }
+
+                const dataTableKey = itemConfig.key;
+                data.tables[dataTableKey] = [];
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (!table) return;
+
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const rowData = { distribution: [] };
+                    let hasContent = false;
+
+                    const charNameInput = row.querySelector('input[placeholder="角色名..."]');
+                    if (charNameInput) rowData.charName = charNameInput.value.trim();
+
+                    const kindInput = row.querySelector('input[data-type="kind"]');
+                    if (kindInput) rowData.kind = kindInput.value.trim();
+
+                    if (rowData.charName || rowData.kind) hasContent = true;
+
+                    const priceInput = row.querySelector('input[data-type="price"]');
+                    if (priceInput) rowData.price = priceInput.value.trim();
+                    if (rowData.price) hasContent = true;
+
+                    const adjPriceInput = row.querySelector('.adj-price');
+                    if (adjPriceInput) rowData.adjPrice = adjPriceInput.value;
+                    if (parseFloat(rowData.adjPrice) !== 0) hasContent = true;
+
+                    rowData.isAutoGen = row.dataset.autogen === 'true';
+
+                    row.querySelectorAll('.dist-entry').forEach(entry => {
+                        const name = entry.querySelector('.dist-name').value.trim();
+                        const quantity = entry.querySelector('.dist-quantity').value.trim();
+                        if (name || quantity) {
+                            rowData.distribution.push({ name, quantity });
+                            hasContent = true;
+                        }
+                    });
+
+                    if (itemConfig.hasChars || hasContent) {
+                        data.tables[dataTableKey].push(rowData);
+                    }
+                });
+            });
+
+            const allSaves = JSON.parse(localStorage.getItem(SAVE_MANIFEST_KEY) || '{}');
+            allSaves[currentSlotName] = data;
+            localStorage.setItem(SAVE_MANIFEST_KEY, JSON.stringify(allSaves));
+
+            if (isAutoSave) {
+                lastAutoSaveTimestamp = new Date();
+                localStorage.setItem(LAST_AUTO_SAVE_TIME_KEY_PREFIX + currentSlotName, lastAutoSaveTimestamp.toISOString());
+                updateLastAutoSaveTimeDisplay();
+            }
+        }
+
+        function archiveData() {
+            const defaultName = new Date().toLocaleString('zh-CN').replace(/[\/:]/g, '').replace(' ', '_');
+            const newSlotName = prompt(`请输入档案名称（用于在读取时识别）`, defaultName);
+
+            if (newSlotName && newSlotName.trim() !== '') {
+                currentSlotName = newSlotName.trim();
+                localStorage.setItem(ACTIVE_SLOT_KEY, currentSlotName);
+                document.getElementById('current-slot-display').textContent = `当前存档: ${currentSlotName}`;
+                saveData(false);
+                alert(`已存储至新档案【${currentSlotName}】`);
+            }
+        }
+
+        function loadData(importedData = null) {
+            let dataToLoad = null;
+
+            if (importedData) {
+                dataToLoad = importedData;
+            } else {
+                const allSaves = JSON.parse(localStorage.getItem(SAVE_MANIFEST_KEY) || '{}');
+                dataToLoad = allSaves[currentSlotName];
+            }
+
+            // Reset state before loading
+            itemTypes = JSON.parse(JSON.stringify(initialItemTypes));
+            orderedTypesForTabs = ['boxA', 'boxB', 'single', 'bonus'];
+            dynamicItemCounter = 0;
+
+            if (dataToLoad) {
+                document.getElementById('exchange-rate').value = dataToLoad.exchangeRate || '';
+                dynamicItemCounter = dataToLoad.dynamicItemCounter || 0;
+
+                if (dataToLoad.orderedTypesForTabs) {
+                    orderedTypesForTabs = [...dataToLoad.orderedTypesForTabs];
+                }
+
+                if (dataToLoad.itemConfigs) {
+                    Object.keys(dataToLoad.itemConfigs).forEach(typeKey => {
+                        // Either update existing or add new dynamic type
+                        itemTypes[typeKey] = dataToLoad.itemConfigs[typeKey];
+                    });
+                }
+            }
+
+            orderedTypesForTabs = orderedTypesForTabs.filter(typeKey => itemTypes[typeKey]);
+
+            generateTables(dataToLoad ? dataToLoad.tables : null);
+            updateAllPrices();
+
+            if (importedData || !dataToLoad) {
+                saveData(true);
+            }
+            updateNameCaches();
+        }
+
+        function resetCurrentSlotData() {
+            if (confirm(`确定要重置当前存档【${currentSlotName}】的所有数据吗？此操作不可逆！`)) {
+                const allSaves = JSON.parse(localStorage.getItem(SAVE_MANIFEST_KEY) || '{}');
+                if (allSaves[currentSlotName]) {
+                    delete allSaves[currentSlotName];
+                    localStorage.setItem(SAVE_MANIFEST_KEY, JSON.stringify(allSaves));
+                }
+                localStorage.removeItem(LAST_AUTO_SAVE_TIME_KEY_PREFIX + currentSlotName);
+                loadData(null); // Reload with no data
+                alert('当前存档数据已重置！');
+            }
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).style.display = 'block';
+            document.querySelector(`button[onclick="showTab('${tabId}')"]`).classList.add('active');
+        }
+
+        function showItemTab(tabKeyToShow) {
+            document.querySelectorAll('.item-tab-content').forEach(c => c.style.display = 'none');
+            document.querySelectorAll('.item-tab-button').forEach(b => b.classList.remove('active'));
+
+            const tabContent = document.getElementById(`table-${tabKeyToShow}`);
+            if (tabContent) tabContent.style.display = 'block';
+
+            const tabButton = document.querySelector(`.item-tab-button[data-tab="${tabKeyToShow}"]`);
+            if (tabButton) tabButton.classList.add('active');
+        }
+
+        function updateItemConfigAndRecalculate(typeKeyChanged) {
+            const itemConfig = itemTypes[typeKeyChanged];
+            if (!itemConfig) return;
+            const idPrefix = itemConfig.id_prefix;
+
+            const nameInput = document.getElementById(`item-name-${idPrefix}`);
+            const priceInput = document.getElementById(`item-price-${idPrefix}`);
+            const charsInput = document.getElementById(`item-chars-${idPrefix}`);
+            const setsInput = document.getElementById(`item-sets-${idPrefix}`);
+            const bonusPriceInput = document.getElementById(`item-bonus-price-${idPrefix}`);
+
+            if (!itemConfig.defaults) itemConfig.defaults = {};
+
+            if (nameInput) {
+                const newName = nameInput.value || itemConfig.key;
+                itemConfig.key = newName;
+                itemConfig.defaults.name = newName;
+                document.querySelector(`.item-tab-button[data-tab='${typeKeyChanged}']`).textContent = `【${newName}】`;
+                document.querySelector(`#table-${typeKeyChanged} h3`).childNodes[0].nodeValue = `${newName} 排表`;
+            }
+            if (priceInput) itemConfig.defaults.price = priceInput.value;
+            if (charsInput) itemConfig.defaults.chars = charsInput.value;
+            if (setsInput) itemConfig.defaults.sets = setsInput.value;
+            if (bonusPriceInput) itemConfig.defaults.bonusPrice = bonusPriceInput.value;
+
+            updateAllPrices();
+        }
+
+        function handleCharacterCountChangeAndCalc(typeKeyChanged) {
+            const itemConfig = itemTypes[typeKeyChanged];
+            if (!itemConfig || !itemConfig.hasChars) return;
+
+            const idPrefix = itemConfig.id_prefix;
+            const tableBody = document.querySelector(`#data-table-${typeKeyChanged} tbody`);
+            const charCountInput = document.getElementById(`item-chars-${idPrefix}`);
+            const newCharCount = parseInt(charCountInput.value) || 0;
+
+            if (itemConfig.defaults) itemConfig.defaults.chars = newCharCount.toString();
+
+            if (!tableBody) return;
+            const currentRows = Array.from(tableBody.rows);
+            const currentRowCount = currentRows.length;
+
+            if (newCharCount > currentRowCount) {
+                for (let i = currentRowCount; i < newCharCount; i++) {
+                    const newRow = tableBody.insertRow();
+                    populateTableRow(newRow, typeKeyChanged, i, {});
+                }
+            } else if (newCharCount < currentRowCount) {
+                for (let i = currentRowCount - 1; i >= newCharCount; i--) {
+                    tableBody.deleteRow(i);
+                }
+            }
+            updateAllPrices();
+        }
+
+        function generateTables(savedTableRows) {
+            const tabsContainer = document.getElementById('item-tabs');
+            const tablesContainer = document.getElementById('item-tables-container');
+            tabsContainer.innerHTML = '';
+            tablesContainer.innerHTML = '';
+
+            orderedTypesForTabs.forEach((typeKey) => {
+                const itemConfig = itemTypes[typeKey];
+                if (!itemConfig) return;
+
+                const idPrefix = itemConfig.id_prefix;
+                const defaults = itemConfig.defaults || {};
+
+                const button = document.createElement('button');
+                button.className = 'item-tab-button';
+                button.textContent = `【${defaults.name || itemConfig.key}】`;
+                button.dataset.tab = typeKey;
+                button.onclick = () => showItemTab(typeKey);
+                tabsContainer.appendChild(button);
+
+                const tableDiv = document.createElement('div');
+                tableDiv.id = `table-${typeKey}`;
+                tableDiv.className = 'item-tab-content';
+
+                let configHTML = '';
+                if (!itemConfig.isDynamicTabContent) {
+                    configHTML += `<div class="item-config-header">
+                        <div class="input-group"><label>商品名</label><input type="text" id="item-name-${idPrefix}" value="${defaults.name || ''}" oninput="updateItemConfigAndRecalculate('${typeKey}')"></div>
+                        <div class="input-group"><label>价格</label><input type="number" id="item-price-${idPrefix}" value="${defaults.price || ''}" oninput="updateItemConfigAndRecalculate('${typeKey}')"></div>`;
+                    if (itemConfig.hasChars) {
+                        configHTML += `<div class="input-group"><label>角色数</label><input type="number" id="item-chars-${idPrefix}" value="${defaults.chars || ''}" min="0" oninput="handleCharacterCountChangeAndCalc('${typeKey}')"></div>`;
+                    }
+                    if (itemConfig.hasSets) {
+                        configHTML += `<div class="input-group"><label>${itemConfig.setsLabel || '配数'}</label><input type="number" id="item-sets-${idPrefix}" value="${defaults.sets || ''}" min="0" oninput="updateItemConfigAndRecalculate('${typeKey}')"></div>`;
+                    }
+                    if (itemConfig.hasBonusPrice) {
+                        configHTML += `<div class="input-group"><label>本盒特典价格</label><input type="number" id="item-bonus-price-${idPrefix}" value="${defaults.bonusPrice || ''}" oninput="updateItemConfigAndRecalculate('${typeKey}')"></div>`;
+                    }
+                    if (itemConfig.isDynamic) {
+                        configHTML += `<button class="remove-btn-text" style="font-size:1em; padding:5px; background-color:var(--accent-color); color:white; border-radius:4px;" onclick="removeDynamicItemType('${typeKey}')">删除此商品类型</button>`;
+                    }
+                    configHTML += `</div>`;
+                }
+
+                let tableTitle = `${defaults.name || itemConfig.key} 排表`;
+                let tableHTMLContent = `<div class="table-scroll-wrapper"><table id="data-table-${typeKey}"><thead><tr>`;
+
+                if (typeKey === 'bonus') tableHTMLContent += `<th class="col-name">种类</th><th class="col-value">价值</th><th class="col-value">调价 <span id="调价提醒-${typeKey}" class="warning-text"></span></th><th class="col-value">终价</th><th class="col-distribution">排表</th><th class="col-value">余量</th><th class="col-operation">操作</th>`;
+                else if (typeKey === 'single') tableHTMLContent += `<th class="col-name">角色</th><th class="col-name">种类</th><th class="col-value">原价</th><th class="col-value">终价</th><th class="col-distribution">排表</th><th class="col-operation">操作</th>`;
+                else tableHTMLContent += `<th class="col-name">角色</th><th class="col-value">均价</th><th class="col-value">调价 <span id="调价提醒-${typeKey}" class="warning-text"></span></th><th class="col-value">终价</th><th class="col-distribution">排表</th><th class="col-value">余量</th>`;
+
+                tableHTMLContent += `</tr></thead><tbody></tbody></table></div>`;
+
+                if (itemConfig.isDynamicTabContent) {
+                    tableHTMLContent += `<button class="add-row-btn" onclick="addDynamicRow('${typeKey}')">添加一行</button>`;
+                }
+                tableHTMLContent += `<button onclick="calculatePageBill('${typeKey}')">计算本页肾表</button><div id="page-bill-${typeKey}" class="info-text" style="white-space: pre-wrap;"></div>`;
+
+                tableDiv.innerHTML = configHTML + `<h3>${tableTitle}</h3>` + tableHTMLContent;
+                tablesContainer.appendChild(tableDiv);
+
+                const tableBody = document.querySelector(`#data-table-${typeKey} tbody`);
+                const savedRowsForType = savedTableRows ? savedTableRows[itemConfig.key] : null;
+
+                if (savedRowsForType && savedRowsForType.length > 0) {
+                    savedRowsForType.forEach((rowData, i) => {
+                        const newRow = tableBody.insertRow();
+                        populateTableRow(newRow, typeKey, i, rowData);
+                    });
+                } else if (!itemConfig.isDynamicTabContent && itemConfig.hasChars) {
+                    const targetCharCount = parseInt(defaults.chars) || 0;
+                    for (let i = 0; i < targetCharCount; i++) {
+                        const newRow = tableBody.insertRow();
+                        populateTableRow(newRow, typeKey, i, {});
+                    }
+                }
+            });
+
+            const addNewButton = document.createElement('button');
+            addNewButton.textContent = '+ 新增商品类型';
+            addNewButton.className = 'item-tab-button add-new-item-type-btn';
+            addNewButton.onclick = addNewCustomItemType;
+            tabsContainer.appendChild(addNewButton);
+        }
+
+        function populateTableRow(row, typeKey, index, data) {
+            const itemConfig = itemTypes[typeKey];
+            row.dataset.type = typeKey;
+            row.dataset.index = index;
+            row.dataset.autogen = data.isAutoGen || false;
+
+            const onInputDist = 'oninput="updateAllPrices()"';
+            const onKeyDown = `handleDistroInput(event, '${typeKey}')`;
+
+            const distCellContent = (distDataArray = []) => {
+                let content = `<div class="distribution-container">`;
+                (distDataArray.length ? distDataArray : [{ name: '', quantity: '' }]).forEach(d => {
+                    content += `<div class="dist-entry">
+                        <input type="text" class="dist-name" placeholder="名字" value="${d.name || ''}" onkeydown="${onKeyDown}" ${onInputDist}>
+                        <input type="number" class="dist-quantity" placeholder="数量" min="0" value="${d.quantity || ''}" onkeydown="${onKeyDown}" ${onInputDist}>
+                        <button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}')">×</button>
+                    </div>`;
+                });
+                return content + `</div><button type="button" class="add-btn-text" onclick="addDistributionEntry(this, '${typeKey}')">+</button>`;
+            };
+
+            let rowHTML = '';
+            if (typeKey === 'bonus') {
+                rowHTML = `<td class="col-name"><input type="text" data-type="kind" value="${data.kind || ''}" ${data.isAutoGen ? 'readonly' : ''}></td>
+                           <td class="col-value"><input type="number" data-type="price" value="${data.price || 0}" ${data.isAutoGen ? 'readonly' : ''}></td>
+                           <td class="col-value"><input type="number" class="adj-price" value="${data.adjPrice || 0}" oninput="updateAllPrices()"></td>
+                           <td class="col-value final-price">0.00</td>
+                           <td class="col-distribution">${distCellContent(data.distribution)}</td>
+                           <td class="col-value remaining-quantity">N/A</td>
+                           <td class="col-operation"><button type="button" class="remove-btn-text" onclick="this.closest('tr').remove(); updateAllPrices();">×</button></td>`;
+            } else if (typeKey === 'single') {
+                rowHTML = `<td class="col-name"><input type="text" placeholder="角色名..." value="${data.charName || ''}"></td>
+                           <td class="col-name"><input type="text" data-type="kind" placeholder="商品种类..." value="${data.kind || ''}"></td>
+                           <td class="col-value"><input type="number" data-type="price" placeholder="原价(円)" value="${data.price || 0}" oninput="updateAllPrices()"></td>
+                           <td class="col-value final-price">0.00</td>
+                           <td class="col-distribution">${distCellContent(data.distribution)}</td>
+                           <td class="col-operation"><button type="button" class="remove-btn-text" onclick="this.closest('tr').remove()">×</button></td>`;
+            } else { // Box Types
+                rowHTML = `<td class="col-name"><input type="text" placeholder="角色名..." value="${data.charName || ''}"></td>
+                           <td class="col-value avg-price">0.00</td>
+                           <td class="col-value"><input type="number" class="adj-price" value="${data.adjPrice || 0}" oninput="updateAllPrices()"></td>
+                           <td class="col-value final-price">0.00</td>
+                           <td class="col-distribution">${distCellContent(data.distribution)}</td>
+                           <td class="col-value remaining-quantity">N/A</td>`;
+            }
+            row.innerHTML = rowHTML;
+        }
+
+        function addDynamicRow(typeKey) {
+            const tableBody = document.querySelector(`#data-table-${typeKey} tbody`);
+            if (!tableBody) return;
+            const newIndex = tableBody.rows.length;
+            const newRow = tableBody.insertRow();
+            populateTableRow(newRow, typeKey, newIndex, { isAutoGen: false });
+        }
+
+        function handleDistroInput(event, typeKey) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addDistributionEntry(event.target, typeKey);
+            }
+        }
+
+        function addDistributionEntry(element, typeKey) {
+            const container = element.closest('.col-distribution').querySelector('.distribution-container');
+            const onInput = 'oninput="updateAllPrices()"';
+            const onKeyDown = `handleDistroInput(event, '${typeKey}')`;
+            const newEntry = document.createElement('div');
+            newEntry.className = 'dist-entry';
+            newEntry.innerHTML = `<input type="text" class="dist-name" placeholder="名字" onkeydown="${onKeyDown}" ${onInput}><input type="number" class="dist-quantity" placeholder="数量" min="0" value="" onkeydown="${onKeyDown}" ${onInput}><button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}')">×</button>`;
+            container.appendChild(newEntry);
+            newEntry.querySelector('.dist-name').focus();
+            updateAllPrices();
+        }
+
+        function removeDistributionEntry(button, typeKey) {
+            const entry = button.parentElement;
+            const container = entry.parentElement;
+            entry.remove();
+            if (container.children.length === 0) addDistributionEntry(container.nextElementSibling, typeKey);
+            updateAllPrices();
+        }
+
+        function populateBonusTableFromItems() {
+            const bonusTableBody = document.querySelector('#data-table-bonus tbody');
+            if (!bonusTableBody) return;
+
+            // Remove only auto-generated rows
+            bonusTableBody.querySelectorAll('tr[data-autogen="true"]').forEach(row => row.remove());
+
+            const existingCustomBonuses = new Set();
+            bonusTableBody.querySelectorAll('tr').forEach(row => {
+                const kindInput = row.querySelector('input[data-type="kind"]');
+                if (kindInput) existingCustomBonuses.add(kindInput.value.trim());
+            });
+
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                if (itemConfig && itemConfig.hasBonusPrice) {
+                    const bonusPrice = parseFloat(itemConfig.defaults.bonusPrice) || 0;
+                    const bonusName = `${itemConfig.defaults.name}特典`;
+                    if (bonusPrice > 0 && !existingCustomBonuses.has(bonusName)) {
+                        const newIndex = bonusTableBody.rows.length;
+                        const newRow = bonusTableBody.insertRow();
+                        populateTableRow(newRow, 'bonus', newIndex, { kind: bonusName, price: bonusPrice.toFixed(2), isAutoGen: true });
+                    }
+                }
+            });
+        }
+
+        function updateAllPrices() {
+            const rate = getExchangeRate();
+            const ceil2 = val => Math.ceil(val * 100) / 100;
+
+            populateBonusTableFromItems();
+
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (!table) return;
+
+                let totalAdj = 0;
+                let avgPrice = 0;
+
+                if (itemConfig.hasBonusPrice) { // Box types
+                    const defaults = itemConfig.defaults;
+                    const itemPrice = parseFloat(defaults.price) || 0;
+                    const numChars = parseInt(defaults.chars) || 1;
+                    const bonusPrice = parseFloat(defaults.bonusPrice) || 0;
+                    avgPrice = numChars > 0 ? (itemPrice * rate - bonusPrice) / numChars : 0;
+                }
+
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const adjPrice = parseFloat(row.querySelector('.adj-price')?.value) || 0;
+                    let finalPrice = 0;
+
+                    if (typeKey === 'single') {
+                        const originalPrice = parseFloat(row.querySelector('input[data-type="price"]').value) || 0;
+                        finalPrice = originalPrice * rate;
+                    } else if (typeKey === 'bonus') {
+                        const value = parseFloat(row.querySelector('input[data-type="price"]').value) || 0;
+                        finalPrice = value + adjPrice;
+                        totalAdj += adjPrice;
+                    } else { // Box types
+                        row.querySelector('.avg-price').textContent = ceil2(avgPrice).toFixed(2);
+                        finalPrice = avgPrice + adjPrice;
+                        totalAdj += adjPrice;
+                    }
+                    row.querySelector('.final-price').textContent = ceil2(finalPrice).toFixed(2);
+                });
+
+                const warningSpan = document.getElementById(`调价提醒-${typeKey}`);
+                if (warningSpan) warningSpan.textContent = Math.abs(totalAdj) > 0.01 ? `调价总和不为0 (${totalAdj.toFixed(2)})` : '';
+            });
+
+            updateAllRemainingQuantities();
+        }
+
+        function getDistributionFromInputs(row) {
+            const entries = {};
+            row.querySelectorAll('.dist-entry').forEach(entry => {
+                const name = entry.querySelector('.dist-name').value.trim();
+                const quantity = parseInt(entry.querySelector('.dist-quantity').value) || 0;
+                if (name && quantity > 0) {
+                    entries[name] = (entries[name] || 0) + quantity;
+                }
+            });
+            return entries;
+        }
+
+        function calculatePageBill(typeKey) {
+            const table = document.getElementById(`data-table-${typeKey}`);
+            const outputDiv = document.getElementById(`page-bill-${typeKey}`);
+            const bill = {};
+            if (!table || !outputDiv) return;
+
+            table.querySelectorAll('tbody tr').forEach(row => {
+                let priceForBilling = parseFloat(row.querySelector('.final-price').textContent);
+                const distribution = getDistributionFromInputs(row);
+                for (const name in distribution) {
+                    bill[name] = (bill[name] || 0) + (priceForBilling * distribution[name]);
+                }
+            });
+
+            let billText = '本页肾表:\n';
+            if (Object.keys(bill).length === 0) billText += '暂无数据';
+            else Object.entries(bill).sort().forEach(([name, amount]) => billText += `${name}: ${amount.toFixed(2)} 元\n`);
+            outputDiv.textContent = billText;
+        }
+
+        function calculateSummary() {
+            updateAllPrices();
+            const totalBill = {};
+            const totalItems = {};
+            const rate = getExchangeRate();
+            let totalCostToLeader = 0;
+
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (!table) return;
+
+                // Accumulate total cost for leader
+                if (itemConfig.hasSets) { // Box types
+                    const sets = parseInt(itemConfig.defaults.sets) || 0;
+                    const price = parseFloat(itemConfig.defaults.price) || 0;
+                    totalCostToLeader += sets * price * rate;
+                }
+
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    if (typeKey === 'single') {
+                        const price = parseFloat(row.querySelector('input[data-type="price"]').value) || 0;
+                        const dist = getDistributionFromInputs(row);
+                        const quantity = Object.values(dist).reduce((s, q) => s + q, 0);
+                        totalCostToLeader += price * quantity * rate;
+                    }
+
+                    let priceForBilling = parseFloat(row.querySelector('.final-price').textContent);
+                    const distribution = getDistributionFromInputs(row);
+
+                    let itemName;
+                    const charName = row.querySelector('input[placeholder="角色名..."]')?.value.trim();
+                    const kindName = row.querySelector('input[data-type="kind"]')?.value.trim();
+
+                    if (typeKey === 'single') {
+                        itemName = charName && kindName ? `${charName}-${kindName}` : (charName || kindName || `项目${row.dataset.index}`);
+                    } else {
+                        itemName = charName || kindName || `项目${row.dataset.index}`;
+                    }
+
+                    for (const person in distribution) {
+                        totalBill[person] = (totalBill[person] || 0) + (priceForBilling * distribution[person]);
+                        if (!totalItems[person]) totalItems[person] = [];
+                        totalItems[person].push(`${itemConfig.key} - ${itemName} x ${distribution[person]}`);
+                    }
+                });
+            });
+
+            // Display Total Bill
+            const billOutput = document.getElementById('total-bill-output');
+            let billText = '';
+            let actualTotal = 0;
+            if (Object.keys(totalBill).length > 0) {
+                Object.entries(totalBill).sort().forEach(([person, amount]) => {
+                    billText += `${person}: ${amount.toFixed(2)} 元\n`;
+                    actualTotal += amount;
+                });
+            } else {
+                billText = '请先在各分表中填写排表信息。';
+            }
+            billOutput.textContent = billText;
+
+            // Display Total Items
+            const itemsOutput = document.getElementById('total-items-output');
+            let itemsText = '';
+            if (Object.keys(totalItems).length > 0) {
+                Object.keys(totalItems).sort().forEach(person => {
+                    itemsText += `--- ${person} ---\n${totalItems[person].join('\n')}\n\n`;
+                });
+            } else {
+                itemsText = '请先在各分表中填写排表信息。';
+            }
+            itemsOutput.textContent = itemsText;
+
+            // Display Check Total
+            document.getElementById('expected-total').textContent = totalCostToLeader.toFixed(2);
+            document.getElementById('actual-total').textContent = actualTotal.toFixed(2);
+            const diff = totalCostToLeader - actualTotal;
+            const diffEl = document.getElementById('check-diff');
+            if (Math.abs(diff) < 0.02) {
+                diffEl.textContent = '✅ 差额为0，账平啦！(差额代表余量价值)';
+                diffEl.style.color = 'var(--success-color)';
+            } else {
+                diffEl.textContent = `⚠️ 差额: ${diff.toFixed(2)} 元。(差额代表余量价值，请检查是否所有余量均未分配)`;
+                diffEl.style.color = 'var(--accent-color)';
+            }
+
+            updateRemainingTable();
+        }
+
+        function updateAllRemainingQuantities() {
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (!table || (itemConfig.isDynamicTabContent && typeKey !== 'bonus')) return;
+
+                let baseQuantity = 0;
+                if (itemConfig.hasSets) { // Box Types
+                    baseQuantity = parseInt(itemConfig.defaults.sets) || 0;
+                } else if (typeKey === 'bonus') {
+                    baseQuantity = 1;
+                }
+
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const distribution = getDistributionFromInputs(row);
+                    const totalDistributed = Object.values(distribution).reduce((sum, q) => sum + q, 0);
+
+                    let specificBaseQty = baseQuantity;
+                    if (typeKey === 'bonus' && row.dataset.autogen === 'true') {
+                        const bonusName = row.querySelector('input[data-type="kind"]')?.value;
+                        const sourceItemKey = Object.keys(itemTypes).find(k => itemTypes[k].defaults?.name + '特典' === bonusName);
+                        if (sourceItemKey) {
+                            specificBaseQty = parseInt(itemTypes[sourceItemKey].defaults.sets) || 0;
+                        } else {
+                            specificBaseQty = 0; // cannot find source
+                        }
+                    }
+
+                    const remaining = specificBaseQty - totalDistributed;
+                    const remainingCell = row.querySelector('.remaining-quantity');
+                    if (remainingCell) remainingCell.textContent = remaining;
+                });
+            });
+        }
+
+        function updateRemainingTable() {
+            updateAllRemainingQuantities();
+            const outputDiv = document.getElementById('remaining-output');
+            let html = '';
+            let hasAnyRemaining = false;
+
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                if (typeKey === 'single') return; // single items don't have 余量
+
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (!table) return;
+
+                const remainingItems = [];
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const remainingCell = row.querySelector('.remaining-quantity');
+                    if (!remainingCell) return;
+
+                    const remainingNum = parseFloat(remainingCell.textContent);
+                    if (isNaN(remainingNum) || remainingNum === 0) return;
+
+                    const price = parseFloat(row.querySelector('.final-price')?.textContent) || 0;
+                    const name = row.querySelector('input[placeholder="角色名..."]')?.value || row.querySelector('input[data-type="kind"]')?.value || `项目${row.dataset.index}`;
+                    remainingItems.push({ name, price, remaining: remainingNum });
+                });
+
+                if (remainingItems.length > 0) {
+                    hasAnyRemaining = true;
+                    html += `<div class="calc-section" style="margin-bottom: 20px;">
+                                <h3 style="margin-top: 0;">${itemConfig.key}</h3>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead><tr style="background-color: var(--highlight-bg);"><th style="text-align: left; padding: 8px;">项目</th><th style="padding: 8px;">价格</th><th style="padding: 8px;">余量</th></tr></thead><tbody>`;
+                    remainingItems.forEach(item => {
+                        html += `<tr><td style="text-align: left; padding: 8px;">${item.name}</td><td style="padding: 8px;">${item.price.toFixed(2)}</td><td style="padding: 8px;">${item.remaining}</td></tr>`;
+                    });
+                    html += `</tbody></table></div>`;
+                }
+            });
+
+            if (!hasAnyRemaining) {
+                html = '<p style="color: var(--light-text-color); text-align: center; font-style: italic; margin-top: 20px;">暂无余量数据，或所有商品余量均为0。</p>';
+            }
+            outputDiv.innerHTML = html;
+        }
+
+        // --- MODALS & EXPORT ---
+        function showExportOptions() { document.getElementById('export-options-modal').style.display = 'block'; }
+        function hideExportOptions() { document.getElementById('export-options-modal').style.display = 'none'; }
+        function showDataSyncModal() { document.getElementById('data-sync-modal').style.display = 'block'; }
+        function hideDataSyncModal() { document.getElementById('data-sync-modal').style.display = 'none'; }
+
+        function showLoadModal() {
+            const allSaves = JSON.parse(localStorage.getItem(SAVE_MANIFEST_KEY) || '{}');
+            const listContainer = document.getElementById('load-modal-list');
+            listContainer.innerHTML = '';
+            const slotNames = Object.keys(allSaves).length > 0 ? Object.keys(allSaves) : [DEFAULT_SLOT_NAME];
+            if (!slotNames.includes(DEFAULT_SLOT_NAME)) slotNames.unshift(DEFAULT_SLOT_NAME);
+
+            slotNames.forEach(slotName => {
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.padding = '5px 0';
+
+                let displayName = slotName === currentSlotName ? `<strong>${slotName} (当前)</strong>` : slotName;
+                div.innerHTML = `<span>${displayName}</span>
+                    <div>
+                        <button onclick="loadSlot('${slotName}')" style="padding: 5px 10px; font-size: 0.9em; margin-right: 5px;">读取</button>
+                        ${slotName !== DEFAULT_SLOT_NAME ? `<button onclick="deleteSlot('${slotName}')" class="remove-btn-text" style="font-size:1.2em;">×</button>` : ''}
+                    </div>`;
+                listContainer.appendChild(div);
+            });
+            document.getElementById('load-modal').style.display = 'block';
+        }
+        function hideLoadModal() { document.getElementById('load-modal').style.display = 'none'; }
+
+        function loadSlot(slotName) {
+            saveData(true);
+            if (confirm(`当前存档【${currentSlotName}】已自动保存。确定要切换并读取档案【${slotName}】吗？`)) {
+                localStorage.setItem(ACTIVE_SLOT_KEY, slotName);
+                location.reload();
+            }
+        }
+        function deleteSlot(slotName) {
+            if (confirm(`确定要永久删除档案 "${slotName}" 吗？此操作无法撤销。`)) {
+                const allSaves = JSON.parse(localStorage.getItem(SAVE_MANIFEST_KEY) || '{}');
+                delete allSaves[slotName];
+                localStorage.setItem(SAVE_MANIFEST_KEY, JSON.stringify(allSaves));
+                if (currentSlotName === slotName) {
+                    localStorage.setItem(ACTIVE_SLOT_KEY, DEFAULT_SLOT_NAME);
+                    location.reload();
+                } else {
+                    showLoadModal();
+                }
+            }
+        }
+
+        function downloadExcelWorkbook(workbook, fileName) {
+            try { XLSX.writeFile(workbook, fileName); }
+            catch (error) { alert("导出Excel失败: " + error); }
+        }
+
+        function getTablesDataForExport() {
+            const allSheetsData = {};
+            orderedTypesForTabs.forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                const sheetData = [];
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (!table) return;
+
+                const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.replace(/<span.*<\/span>/g, '').trim());
+                if (headers.includes('排表')) {
+                    const排表Index = headers.indexOf('排表');
+                    headers.splice(排表Index, 1, '分配给', '数量');
+                }
+                sheetData.push(headers);
+
+                table.querySelectorAll('tbody tr').forEach(row => {
+                    const baseRowData = Array.from(row.cells).map((td, idx) => {
+                        if (td.classList.contains('col-distribution')) return 'DIST_PLACEHOLDER';
+                        const input = td.querySelector('input');
+                        return input ? input.value : td.textContent.trim();
+                    });
+
+                    const distributionEntries = [];
+                    row.querySelectorAll('.dist-entry').forEach(entry => {
+                        const name = entry.querySelector('.dist-name').value.trim();
+                        const quantity = entry.querySelector('.dist-quantity').value.trim();
+                        if (name || quantity) distributionEntries.push({ name, quantity });
+                    });
+
+                    const distColIndex = baseRowData.indexOf('DIST_PLACEHOLDER');
+                    if (distributionEntries.length > 0) {
+                        distributionEntries.forEach(dist => {
+                            const fullRow = [...baseRowData];
+                            fullRow.splice(distColIndex, 1, dist.name, dist.quantity);
+                            sheetData.push(fullRow);
+                        });
+                    } else {
+                        if (distColIndex > -1) baseRowData.splice(distColIndex, 1, '', '');
+                        sheetData.push(baseRowData);
+                    }
+                });
+                allSheetsData[`排表-${itemConfig.key}`] = sheetData;
+            });
+            return allSheetsData;
+        }
+
+        function getSummaryDataForExport() {
+            calculateSummary();
+            const sheets = {};
+            const billOutputEl = document.getElementById('total-bill-output');
+            const billData = [['团员', '金额 (元)']];
+            billOutputEl.textContent.split('\n').forEach(line => {
+                if (line.includes(':')) {
+                    const parts = line.split(':');
+                    billData.push([parts[0].trim(), parts[1].replace('元', '').trim()]);
+                }
+            });
+            sheets["总肾表"] = billData;
+
+            const itemsOutputEl = document.getElementById('total-items-output');
+            const itemsData = [['团员', '物品', '数量']];
+            let currentPerson = null;
+            itemsOutputEl.textContent.split('\n').forEach(line => {
+                if (line.startsWith('--- ')) currentPerson = line.substring(4, line.length - 4).trim();
+                else if (currentPerson && line.includes(' x ')) {
+                    const parts = line.split(' x ');
+                    itemsData.push([currentPerson, parts[0].trim(), parts[1].trim()]);
+                }
+            });
+            sheets["总排表"] = itemsData;
+
+            const checkData = [['项目', '值']];
+            document.querySelectorAll('#check-total-output p').forEach(p => {
+                const text = p.textContent.trim();
+                const valueEl = p.querySelector('span.result-field');
+                if (valueEl) {
+                    checkData.push([text.split(':')[0].trim(), valueEl.textContent]);
+                } else if (p.id === 'check-diff') {
+                    checkData.push(['核对信息', text]);
+                }
+            });
+            sheets["肾额核对"] = checkData;
+            return sheets;
+        }
+
+        function exportTablesData() {
+            const sheetsData = getTablesDataForExport();
+            const wb = XLSX.utils.book_new();
+            for (const sheetName in sheetsData) {
+                const ws = XLSX.utils.aoa_to_sheet(sheetsData[sheetName]);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            }
+            downloadExcelWorkbook(wb, `烤谷打表机-排表.xlsx`);
+        }
+        function exportSummaryData() {
+            const sheetsData = getSummaryDataForExport();
+            const wb = XLSX.utils.book_new();
+            for (const sheetName in sheetsData) {
+                const ws = XLSX.utils.aoa_to_sheet(sheetsData[sheetName]);
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            }
+            downloadExcelWorkbook(wb, `烤谷打表机-肾表.xlsx`);
+        }
+        function exportAllData() {
+            const wb = XLSX.utils.book_new();
+            const tablesSheets = getTablesDataForExport();
+            for (const name in tablesSheets) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(tablesSheets[name]), name);
+            const summarySheets = getSummaryDataForExport();
+            for (const name in summarySheets) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summarySheets[name]), name);
+            downloadExcelWorkbook(wb, `烤谷打表机-全部数据.xlsx`);
+        }
+
+        function exportAllDataAsJson() {
+            const allSaves = JSON.parse(localStorage.getItem(SAVE_MANIFEST_KEY) || '{}');
+            const dataToExport = allSaves[currentSlotName];
+            if (!dataToExport) { alert("当前存档没有数据可导出。"); return; }
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: "application/json;charset=utf-8" });
+            const fileName = `KiguMachine-${currentSlotName}.json`;
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+            URL.revokeObjectURL(link.href);
+            hideDataSyncModal();
+        }
+
+        function handleJsonFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedJson = JSON.parse(e.target.result);
+                    if (confirm(`导入数据将会覆盖当前存档【${currentSlotName}】的内容，确定吗？`)) {
+                        loadData(importedJson);
+                        alert('数据导入成功！');
+                    }
+                } catch (error) {
+                    alert("导入JSON文件失败: " + error.message);
+                } finally {
+                    event.target.value = '';
+                    hideDataSyncModal();
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function addNewCustomItemType() {
+            dynamicItemCounter++;
+            const newTypeKey = `custom_${dynamicItemCounter}`;
+            const newItemName = prompt("请输入新商品类型的名称:", `自定义商品 ${dynamicItemCounter}`);
+            if (!newItemName) { dynamicItemCounter--; return; }
+
+            itemTypes[newTypeKey] = {
+                id_prefix: newTypeKey, key: newItemName,
+                defaults: { name: newItemName, price: '', chars: '1', sets: '0', bonusPrice: '0' },
+                hasChars: true, hasSets: true, setsLabel: '盒数', hasBonusPrice: true, isDynamic: true
+            };
+            orderedTypesForTabs.splice(orderedTypesForTabs.indexOf('single'), 0, newTypeKey);
+
+            generateTables(null);
+            showItemTab(newTypeKey);
+        }
+
+        function removeDynamicItemType(typeKeyToRemove) {
+            if (confirm(`确定要删除商品类型 "${itemTypes[typeKeyToRemove].key}" 吗？其所有配置和排表数据都将丢失。`)) {
+                delete itemTypes[typeKeyToRemove];
+                orderedTypesForTabs = orderedTypesForTabs.filter(key => key !== typeKeyToRemove);
+                generateTables(null);
+                if (orderedTypesForTabs.length > 0) showItemTab(orderedTypesForTabs[0]);
+            }
+        }
+
+        // --- AUTOCOMPLETE (REBUILT) ---
+        let allCharacterNames = new Set();
+        let allMemberNames = new Set();
+        let allKindNames = new Set();
+
+               function updateNameCaches() {
+            allCharacterNames.clear();
+            allMemberNames.clear();
+            allKindNames.clear();
+            
+            // 扫描所有角色名输入框（包括盒子和单领的）
+            document.querySelectorAll('input[placeholder="角色名..."]').forEach(input => {
+                if (input.value.trim()) {
+                    allCharacterNames.add(input.value.trim());
+                }
+            });
+            
+            // 扫描所有团员名输入框
+            document.querySelectorAll('input.dist-name').forEach(input => {
+                if (input.value.trim()) {
+                    allMemberNames.add(input.value.trim());
+                }
+            });
+            
+            // 扫描所有种类输入框（单领表格中的）
+            document.querySelectorAll('#data-table-single input[data-type="kind"]').forEach(input => {
+                if (input.value.trim()) {
+                    allKindNames.add(input.value.trim());
+                }
+            });
+        }
+
+
+            function setupAutocomplete() {
+            const suggestionBox = document.getElementById('autocomplete-suggestions');
+            let activeSuggestionInput = null;
+            let activeSuggestionIndex = -1;
+
+            function repositionSuggestionBox() {
+                if (!activeSuggestionInput) return;
+                const rect = activeSuggestionInput.getBoundingClientRect();
+                suggestionBox.style.left = `${rect.left}px`;
+                suggestionBox.style.top = `${rect.bottom}px`;
+                suggestionBox.style.width = `${rect.width}px`;
+            }
+
+            function showSuggestions(inputElement, nameSet, filter = '') {
+                const suggestions = [...nameSet].filter(name => name.toLowerCase().includes(filter.toLowerCase()));
+
+                if (suggestions.length === 0) {
+                    hideSuggestions();
+                    return;
+                }
+
+                suggestionBox.innerHTML = '';
+                suggestions.forEach(name => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = name;
+                    item.addEventListener('mousedown', (e) => {
+                        e.preventDefault();
+                        inputElement.value = name;
+                        hideSuggestions();
+                        inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+                    });
+                    suggestionBox.appendChild(item);
+                });
+
+                repositionSuggestionBox();
+                suggestionBox.style.display = 'block';
+                activeSuggestionIndex = -1;
+            }
+
+            function hideSuggestions() {
+                suggestionBox.style.display = 'none';
+                activeSuggestionInput = null;
+            }
+
+            function handleKeyDown(e) {
+                if (!activeSuggestionInput || suggestionBox.style.display === 'none') return;
+
+                const items = suggestionBox.querySelectorAll('.suggestion-item');
+                if (items.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+                    updateActiveSuggestion(items);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+                    updateActiveSuggestion(items);
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (activeSuggestionIndex > -1) {
+                        items[activeSuggestionIndex].dispatchEvent(new MouseEvent('mousedown'));
+                    }
+                    hideSuggestions();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    hideSuggestions();
+                }
+            }
+
+            function updateActiveSuggestion(items) {
+                items.forEach(item => item.classList.remove('active'));
+                if (activeSuggestionIndex > -1) {
+                    items[activeSuggestionIndex].classList.add('active');
+                    items[activeSuggestionIndex].scrollIntoView({ block: 'nearest' });
+                }
+            }
+
+            document.addEventListener('focusin', (e) => {
+                const target = e.target;
+                let nameSet = null;
+
+                if (target.matches('input[placeholder="角色名..."]')) {
+                    nameSet = allCharacterNames;
+                } else if (target.matches('input.dist-name')) {
+                    nameSet = allMemberNames;
+                } else if (target.matches('#data-table-single input[data-type="kind"]')) {
+                    nameSet = allKindNames;
+                }
+
+                if (nameSet) {
+                    activeSuggestionInput = target;
+                    updateNameCaches();
+                    showSuggestions(target, nameSet, target.value);
+                }
+            });
+
+            document.addEventListener('input', (e) => {
+                if (e.target === activeSuggestionInput) {
+                    let nameSet = null;
+                    if (e.target.matches('input[placeholder="角色名..."]')) {
+                        nameSet = allCharacterNames;
+                    } else if (e.target.matches('input.dist-name')) {
+                        nameSet = allMemberNames;
+                    } else if (e.target.matches('#data-table-single input[data-type="kind"]')) {
+                        nameSet = allKindNames;
+                    }
+                    if (nameSet) {
+                        showSuggestions(e.target, nameSet, e.target.value);
+                    }
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target !== activeSuggestionInput && !suggestionBox.contains(e.target)) {
+                    hideSuggestions();
+                }
+            });
+
+            document.addEventListener('blur', (e) => {
+                if (e.target.matches('input[placeholder="角色名..."]') ||
+                    e.target.matches('input.dist-name') ||
+                    e.target.matches('#data-table-single input[data-type="kind"]')) {
+                    updateNameCaches();
+                }
+            }, true);
+
+            document.addEventListener('keydown', handleKeyDown);
+
+            const updatePositionOnScrollOrResize = () => {
+                if (suggestionBox.style.display === 'block') {
+                    repositionSuggestionBox();
+                }
+            };
+            window.addEventListener('scroll', updatePositionOnScrollOrResize, true);
+            window.addEventListener('resize', updatePositionOnScrollOrResize);
+        }
+
+
+        function copyToClipboard(elementId, buttonElement) {
+            const element = document.getElementById(elementId);
+            if (!element) return;
+            let textToCopy = element.innerText || element.textContent;
+
+            if (element.querySelector('table')) { // Format table text
+                textToCopy = '';
+                element.querySelectorAll('.calc-section').forEach(section => {
+                    textToCopy += section.querySelector('h3').textContent.trim() + '\n';
+                    section.querySelectorAll('tr').forEach(row => {
+                        textToCopy += Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent.trim()).join('\t') + '\n';
+                    });
+                    textToCopy += '\n';
+                });
+            }
+
+            navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+                const originalText = buttonElement.textContent;
+                buttonElement.textContent = '✅ 已复制';
+                setTimeout(() => { buttonElement.textContent = originalText; }, 2000);
+            }).catch(err => alert('复制失败: ' + err));
+        }
+
+    </script>
+</body>
+
+</html>
