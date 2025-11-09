@@ -309,17 +309,17 @@
 
         th.col-name,
         td.col-name {
-            min-width: 120px;
+            min-width: 95px;
         }
 
         th.col-value,
         td.col-value {
-            width: 90px;
+            width: 70px;
         }
 
         th.col-distribution,
         td.col-distribution {
-            min-width: 190px;
+            min-width: 230px;
         }
 
         th.col-operation,
@@ -723,6 +723,57 @@
             color: #c62828;
             border-left: 3px solid #f44336;
         }
+
+        /* all模式的行背景色 */
+        .has-all-mode {
+            background-color: var(--bg-color) !important;
+        }
+
+        /* all按钮样式 */
+        .all-btn {
+            background: none;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.75em;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 3px;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .all-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .all-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* 复选框样式 */
+        .payment-checkbox {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .payment-item-with-checkbox,
+        .refund-item-with-checkbox,
+        .person-bill-item-with-checkbox {
+            display: flex;
+            align-items: center;
+        }
+
+        .payment-item-with-checkbox.completed,
+        .refund-item-with-checkbox.completed,
+        .person-bill-item-with-checkbox.completed {
+            opacity: 0.5;
+        }
     </style>
 </head>
 
@@ -1062,7 +1113,7 @@
             const data = {
                 exchangeRate: document.getElementById('exchange-rate').value,
                 tables: {},
-                shippingTables: {}, // 新增：存储出荷配比数据
+                shippingTables: {},
                 itemConfigs: {},
                 dynamicTypeKeys: [],
                 orderedTypesForTabs: [...orderedTypesForTabs],
@@ -1114,8 +1165,9 @@
                         row.querySelectorAll('.dist-entry').forEach(entry => {
                             const name = entry.querySelector('.dist-name').value.trim();
                             const quantity = entry.querySelector('.dist-quantity').value.trim();
-                            if (name || quantity) {
-                                rowData.distribution.push({ name, quantity });
+                            const isAll = entry.dataset.isAll === 'true';
+                            if (name || quantity || isAll) {
+                                rowData.distribution.push({ name, quantity, isAll });
                                 hasContent = true;
                             }
                         });
@@ -1125,12 +1177,13 @@
                         }
                     });
                 }
+
                 // 保存国际邮费数据
                 if (typeKey === 'shipping') {
                     data.shippingFeeConfig = {
                         totalFee: document.getElementById('total-shipping-fee')?.value || '0',
                         pointsData: [],
-                        customPointsData: [] // 新增：用于存储自定义行
+                        customPointsData: []
                     };
 
                     const shippingTable = document.getElementById('shipping-fee-table');
@@ -1146,7 +1199,7 @@
                             }
                         });
                     }
-                    // 新增：保存自定义行数据
+
                     const customShippingTable = document.getElementById('custom-shipping-fee-table');
                     if (customShippingTable) {
                         customShippingTable.querySelectorAll('tbody tr').forEach(row => {
@@ -1164,8 +1217,7 @@
                     }
                 }
 
-
-                // 新增：保存出荷配比数据（只针对盒子类型）
+                // 保存出荷配比数据（只针对盒子类型）
                 if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
                     data.shippingTables[dataTableKey] = [];
                     const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
@@ -1191,18 +1243,22 @@
                                 if (adjPriceInput) rowData.adjPrice = adjPriceInput.value;
                                 if (parseFloat(rowData.adjPrice) !== 0) hasContent = true;
 
+                                const ratioInput = row.querySelector('.shipping-ratio');
+                                if (ratioInput) rowData.ratio = ratioInput.value;
+                                if (rowData.ratio) hasContent = true;
+
                                 rowData.isFromSync = row.dataset.fromsync === 'true';
                             }
 
                             row.querySelectorAll('.dist-entry').forEach(entry => {
                                 const name = entry.querySelector('.dist-name').value.trim();
                                 const quantity = entry.querySelector('.dist-quantity').value.trim();
-                                if (name || quantity) {
-                                    rowData.distribution.push({ name, quantity });
+                                const isAll = entry.dataset.isAll === 'true';
+                                if (name || quantity || isAll) {
+                                    rowData.distribution.push({ name, quantity, isAll });
                                     hasContent = true;
                                 }
                             });
-
 
                             if (hasContent) {
                                 data.shippingTables[dataTableKey].push(rowData);
@@ -1222,7 +1278,6 @@
                 updateLastAutoSaveTimeDisplay();
             }
         }
-
 
         function loadData(importedData = null) {
             let dataToLoad = null;
@@ -1514,7 +1569,8 @@
                                 <th class="col-value">均价</th>
                                 <th class="col-value">调价 <span id="调价提醒-shipping-${typeKey}" class="warning-text"></span></th>
                                 <th class="col-value">终价</th>
-                                <th class="col-distribution">出荷配比</th>
+                                <th class="col-distribution">排表</th>
+                                <th class="col-value">配比</th>
                                 <th class="col-value">余量</th>
                                 <th class="col-operation">操作</th>
                             </tr>
@@ -1572,6 +1628,7 @@
             tabsContainer.appendChild(addNewButton);
         }
 
+
         function addCustomShippingRow(data = {}) {
             const tableBody = document.querySelector('#custom-shipping-fee-table tbody');
             if (!tableBody) return;
@@ -1597,11 +1654,13 @@
 
             const distCellContent = (distDataArray = []) => {
                 let content = `<div class="distribution-container">`;
-                (distDataArray.length ? distDataArray : [{ name: '', quantity: '' }]).forEach(d => {
-                    content += `<div class="dist-entry">
+                (distDataArray.length ? distDataArray : [{ name: '', quantity: '', isAll: false }]).forEach(d => {
+                    const isAllActive = d.isAll ? 'active' : '';
+                    content += `<div class="dist-entry" data-is-all="${d.isAll || false}">
                         <input type="text" class="dist-name" placeholder="名字" value="${d.name || ''}" onkeydown="${onKeyDown}" ${onInputDist}>
-                        <input type="number" class="dist-quantity" placeholder="数量" min="0" value="${d.quantity || ''}" onkeydown="${onKeyDown}" ${onInputDist}>
+                        <input type="number" class="dist-quantity" placeholder="数量" min="0" value="${d.quantity || ''}" onkeydown="${onKeyDown}" ${onInputDist} ${d.isAll ? 'readonly' : ''}>
                         <button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}')">×</button>
+                        <button type="button" class="all-btn ${isAllActive}" onclick="toggleAllMode(this, '${typeKey}')">all</button>
                     </div>`;
                 });
                 return content + `</div><button type="button" class="add-btn-text" onclick="addDistributionEntry(this, '${typeKey}')">+</button>`;
@@ -1633,7 +1692,11 @@
                            <td class="col-value remaining-quantity">N/A</td>`;
             }
             row.innerHTML = rowHTML;
+
+            // 检查是否有all模式的分配
+            updateRowAllModeStyle(row);
         }
+
 
         function populateShippingTableRow(row, typeKey, index, data, isGift = false, isFromSync = false) {
             const itemConfig = itemTypes[typeKey];
@@ -1647,40 +1710,44 @@
 
             const distCellContent = (distDataArray = []) => {
                 let content = `<div class="distribution-container">`;
-                (distDataArray.length ? distDataArray : [{ name: '', quantity: '' }]).forEach(d => {
-                    content += `<div class="dist-entry">
+                (distDataArray.length ? distDataArray : [{ name: '', quantity: '', isAll: false }]).forEach(d => {
+                    const isAllActive = d.isAll ? 'active' : '';
+                    content += `<div class="dist-entry" data-is-all="${d.isAll || false}">
                         <input type="text" class="dist-name" placeholder="名字" value="${d.name || ''}" onkeydown="${onKeyDown}" ${onInputDist}>
-                        <input type="number" class="dist-quantity" placeholder="数量" min="0" value="${d.quantity || ''}" onkeydown="${onKeyDown}" ${onInputDist}>
+                        <input type="number" class="dist-quantity" placeholder="数量" min="0" value="${d.quantity || ''}" onkeydown="${onKeyDown}" ${onInputDist} ${d.isAll ? 'readonly' : ''}>
                         <button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}', true)">×</button>
+                        <button type="button" class="all-btn ${isAllActive}" onclick="toggleAllMode(this, '${typeKey}', true)">all</button>
                     </div>`;
                 });
-                // 修正：无论是否同步，都显示添加按钮
                 return content + `<button type="button" class="add-btn-text" onclick="addDistributionEntry(this, '${typeKey}', true)">+</button>`;
             };
 
             let rowHTML = '';
 
             if (isGift) {
-                // 赠品行逻辑不变
                 row.classList.add('gift-row');
                 rowHTML = `<td class="col-name"><input type="text" placeholder="赠品角色..." value="${data.charName || ''}"></td>
                            <td class="col-value" colspan="2"><input type="number" class="gift-price" placeholder="价格" value="${data.giftPrice || 0}" oninput="updateAllPrices()"></td>
                            <td class="col-value"></td>
                            <td class="col-distribution">${distCellContent(data.distribution)}</td>
                            <td class="col-value"></td>
+                           <td class="col-value"></td>
                            <td class="col-operation"><button type="button" class="remove-btn-text" onclick="this.closest('tr').remove(); updateAllPrices();">×</button></td>`;
             } else {
-                // 普通行（包括同步行）的逻辑
                 rowHTML = `<td class="col-name"><input type="text" placeholder="角色名..." value="${data.charName || ''}" ${isFromSync ? 'readonly' : ''}></td>
                            <td class="col-value shipping-avg-price">0.00</td>
                            <td class="col-value"><input type="number" class="adj-price" value="${data.adjPrice || 0}" oninput="updateAllPrices()"></td>
                            <td class="col-value shipping-final-price">0.00</td>
                            <td class="col-distribution">${distCellContent(data.distribution)}</td>
+                           <td class="col-value"><input type="number" class="shipping-ratio" value="${data.ratio || ''}" placeholder="配比" oninput="updateAllPrices()"></td>
                            <td class="col-value shipping-remaining-quantity">N/A</td>
                            <td class="col-operation">${isFromSync ? '<span style="font-size:0.8em; color:var(--light-text-color);">(同步)</span>' : '<button type="button" class="remove-btn-text" onclick="this.closest(\'tr\').remove(); updateAllPrices();">×</button>'}</td>`;
             }
 
             row.innerHTML = rowHTML;
+
+            // 检查是否有all模式的分配
+            updateRowAllModeStyle(row);
         }
 
         function addGiftRow(typeKey) {
@@ -1696,12 +1763,14 @@
         function syncToShippingTable(typeKey) {
             const sourceTable = document.getElementById(`data-table-${typeKey}`);
             const targetTable = document.getElementById(`shipping-table-${typeKey}`);
+            const itemConfig = itemTypes[typeKey];
 
-            if (!sourceTable || !targetTable) return;
+            if (!sourceTable || !targetTable || !itemConfig) return;
 
             if (!confirm('这将覆盖出荷配比表中的所有非赠品数据，确定要同步吗？')) return;
 
             const targetBody = targetTable.querySelector('tbody');
+            const boxCount = itemConfig.defaults.sets || 0;
 
             // 保存现有的赠品行
             const existingGiftRows = [];
@@ -1712,8 +1781,9 @@
                 row.querySelectorAll('.dist-entry').forEach(entry => {
                     const name = entry.querySelector('.dist-name').value.trim();
                     const quantity = entry.querySelector('.dist-quantity').value.trim();
-                    if (name || quantity) {
-                        distribution.push({ name, quantity });
+                    const isAll = entry.dataset.isAll === 'true';
+                    if (name || quantity || isAll) {
+                        distribution.push({ name, quantity, isAll });
                     }
                 });
                 existingGiftRows.push({ charName, giftPrice, distribution });
@@ -1731,8 +1801,9 @@
                 row.querySelectorAll('.dist-entry').forEach(entry => {
                     const name = entry.querySelector('.dist-name').value.trim();
                     const quantity = entry.querySelector('.dist-quantity').value.trim();
-                    if (name || quantity) {
-                        distribution.push({ name, quantity });
+                    const isAll = entry.dataset.isAll === 'true';
+                    if (name || quantity || isAll) {
+                        distribution.push({ name, quantity, isAll });
                     }
                 });
 
@@ -1740,7 +1811,8 @@
                 populateShippingTableRow(newRow, typeKey, index, {
                     charName,
                     adjPrice,
-                    distribution
+                    distribution,
+                    ratio: boxCount
                 }, false, true); // isGift=false, isFromSync=true
             });
 
@@ -1753,7 +1825,6 @@
             updateAllPrices();
             alert('已同步！赠品数据已保留。');
         }
-
 
         function addDynamicRow(typeKey) {
             const tableBody = document.querySelector(`#data-table-${typeKey} tbody`);
@@ -1777,7 +1848,11 @@
             const onKeyDown = `handleDistroInput(event, '${typeKey}', ${isShipping})`;
             const newEntry = document.createElement('div');
             newEntry.className = 'dist-entry';
-            newEntry.innerHTML = `<input type="text" class="dist-name" placeholder="名字" onkeydown="${onKeyDown}" ${onInput}><input type="number" class="dist-quantity" placeholder="数量" min="0" value="" onkeydown="${onKeyDown}" ${onInput}><button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}', ${isShipping})">×</button>`;
+            newEntry.dataset.isAll = 'false';
+            newEntry.innerHTML = `<input type="text" class="dist-name" placeholder="名字" onkeydown="${onKeyDown}" ${onInput}>
+                <input type="number" class="dist-quantity" placeholder="数量" min="0" value="" onkeydown="${onKeyDown}" ${onInput}>
+                <button type="button" class="remove-btn-text" onclick="removeDistributionEntry(this, '${typeKey}', ${isShipping})">×</button>
+                <button type="button" class="all-btn" onclick="toggleAllMode(this, '${typeKey}', ${isShipping})">all</button>`;
             container.appendChild(newEntry);
             newEntry.querySelector('.dist-name').focus();
             updateAllPrices();
@@ -1900,7 +1975,7 @@
                 if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
                     const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
                     if (shippingTable) {
-                        let shippingTotalAdj = 0;
+                        let totalWeightedFinalPrice = 0; // Σ(终价 × 配比)
                         let giftTotalValue = 0;
 
                         // 计算赠品总价值
@@ -1916,6 +1991,7 @@
                         const itemPrice = parseFloat(defaults.price) || 0;
                         const numChars = parseInt(defaults.chars) || 1;
                         const bonusPrice = parseFloat(defaults.bonusPrice) || 0;
+                        const boxCount = parseInt(defaults.sets) || 0;
 
                         let adjustedAvgPrice = avgPrice;
                         if (numChars > 0) {
@@ -1931,15 +2007,25 @@
                             }
 
                             const adjPrice = parseFloat(row.querySelector('.adj-price')?.value) || 0;
+                            const ratio = parseFloat(row.querySelector('.shipping-ratio')?.value) || 0;
                             row.querySelector('.shipping-avg-price').textContent = ceil2(adjustedAvgPrice).toFixed(2);
                             const finalPrice = adjustedAvgPrice + adjPrice;
                             row.querySelector('.shipping-final-price').textContent = ceil2(finalPrice).toFixed(2);
-                            shippingTotalAdj += adjPrice;
+
+                            // 累加：终价 × 配比
+                            totalWeightedFinalPrice += ceil2(finalPrice) * ratio;
                         });
+
+                        // 计算理论总价：单抽的价格 × 角色数 × 盒数
+                        const theoreticalTotal = adjustedAvgPrice * numChars * boxCount;
+
+                        // 调价总和 = 实际总价 - 理论总价
+                        const adjustmentDiff = totalWeightedFinalPrice - theoreticalTotal;
 
                         const shippingWarningSpan = document.getElementById(`调价提醒-shipping-${typeKey}`);
                         if (shippingWarningSpan) {
-                            shippingWarningSpan.textContent = Math.abs(shippingTotalAdj) > 0.01 ? `调价总和不为0 (${shippingTotalAdj.toFixed(2)})` : '';
+                            shippingWarningSpan.textContent = Math.abs(adjustmentDiff) > 0.01 ?
+                                `调价总和不为0 (${adjustmentDiff.toFixed(2)})` : '';
                         }
                     }
                 }
@@ -2213,11 +2299,8 @@
         function calculateSummary() {
             updateAllPrices();
 
-            // 本次肾表和排表（基于排表）
             const currentBill = {};
             const currentItems = {};
-
-            // 实际肾表和排表（基于出荷配比 + 单领/特典 + 赠品）
             const actualBill = {};
             const actualItems = {};
 
@@ -2227,14 +2310,12 @@
             Object.keys(itemTypes).forEach(typeKey => {
                 const itemConfig = itemTypes[typeKey];
 
-                // 计算团长成本
                 if (itemConfig.hasSets) {
                     const sets = parseInt(itemConfig.defaults.sets) || 0;
                     const price = parseFloat(itemConfig.defaults.price) || 0;
                     totalCostToLeader += sets * price * rate;
                 }
 
-                // === 处理排表数据（用于计算“本次肾表/排表”） ===
                 const table = document.getElementById(`data-table-${typeKey}`);
                 if (table) {
                     table.querySelectorAll('tbody tr').forEach(row => {
@@ -2266,9 +2347,7 @@
                     });
                 }
 
-                // === 处理出荷数据（用于计算“实际肾表/排表”） ===
                 if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
-                    // 这是盒子类型，使用“出荷配比”表
                     const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
                     if (shippingTable) {
                         shippingTable.querySelectorAll('tbody tr').forEach(row => {
@@ -2277,11 +2356,9 @@
                             let isGift = row.dataset.isgift === 'true';
 
                             if (isGift) {
-                                // 修正：处理赠品行
                                 priceForBilling = parseFloat(row.querySelector('.gift-price')?.value) || 0;
                                 itemName = row.querySelector('input[placeholder="赠品角色..."]')?.value.trim() || '赠品';
                             } else {
-                                // 处理普通行
                                 priceForBilling = parseFloat(row.querySelector('.shipping-final-price').textContent);
                                 itemName = row.querySelector('input[placeholder="角色名..."]')?.value.trim() || `项目${row.dataset.index}`;
                             }
@@ -2296,7 +2373,6 @@
                         });
                     }
                 } else if (typeKey === 'single' || typeKey === 'bonus') {
-                    // 这是单领或特典，使用它们自己的主排表
                     const mainTable = document.getElementById(`data-table-${typeKey}`);
                     if (mainTable) {
                         mainTable.querySelectorAll('tbody tr').forEach(row => {
@@ -2309,7 +2385,7 @@
 
                             if (typeKey === 'single') {
                                 itemName = charName && kindName ? `${charName}-${kindName}` : (charName || kindName || `项目${row.dataset.index}`);
-                            } else { // bonus
+                            } else {
                                 itemName = kindName || `项目${row.dataset.index}`;
                             }
 
@@ -2323,31 +2399,37 @@
                 }
             });
 
-            // === 显示本次肾表 ===
+            // === 显示本次肾表（新样式带复选框）===
             const billOutput = document.getElementById('total-bill-output');
-            let billText = '';
+            let billHTML = '';
             let currentTotal = 0;
             if (Object.keys(currentBill).length > 0) {
                 Object.entries(currentBill).sort().forEach(([person, amount]) => {
-                    billText += `${person}: ${amount.toFixed(2)} 元\n`;
+                    billHTML += `<div class="person-bill-item-with-checkbox">
+                        <input type="checkbox" class="payment-checkbox" onchange="togglePaymentStatus(this)">
+                        <div><strong>${person}</strong>: ${amount.toFixed(2)} 元</div>
+                    </div>`;
                     currentTotal += amount;
                 });
             } else {
-                billText = '请先在各分表中填写排表信息。';
+                billHTML = '<p style="color: var(--light-text-color); text-align: center; font-style: italic;">请先在各分表中填写排表信息。</p>';
             }
-            billOutput.textContent = billText;
+            billOutput.innerHTML = billHTML;
 
             // === 显示本次排表 ===
             const itemsOutput = document.getElementById('total-items-output');
-            let itemsText = '';
+            let itemsHTML = '';
             if (Object.keys(currentItems).length > 0) {
                 Object.keys(currentItems).sort().forEach(person => {
-                    itemsText += `--- ${person} ---\n${currentItems[person].join('\n')}\n\n`;
+                    itemsHTML += `<div class="person-items-section">
+                <div class="person-name">--- ${person} ---</div>
+                ${currentItems[person].map(item => `<div class="item-line">${item}</div>`).join('')}
+            </div>`;
                 });
             } else {
-                itemsText = '请先在各分表中填写排表信息。';
+                itemsHTML = '<p style="color: var(--light-text-color); text-align: center; font-style: italic;">请先在各分表中填写排表信息。</p>';
             }
-            itemsOutput.textContent = itemsText;
+            itemsOutput.innerHTML = itemsHTML;
 
             // === 显示国际肾表 ===
             updateShippingFeeTable();
@@ -2401,7 +2483,7 @@
             }
             actualItemsOutput.innerHTML = actualItemsHTML;
 
-            // === 计算退补 ===
+            // === 计算退补（带复选框）===
             const refundOutput = document.getElementById('refund-output');
             let refundHTML = '';
             const allPeople = new Set([...Object.keys(currentBill), ...Object.keys(actualBill)]);
@@ -2430,7 +2512,10 @@
                     if (refundList.length > 0) {
                         refundList.sort((a, b) => b.amount - a.amount);
                         refundList.forEach(({ person, amount }) => {
-                            refundColumn += `<div class="refund-item">${person}: ${amount.toFixed(2)} 元</div>`;
+                            refundColumn += `<div class="refund-item-with-checkbox">
+                                <input type="checkbox" class="payment-checkbox" onchange="togglePaymentStatus(this)">
+                                <div>${person}: ${amount.toFixed(2)} 元</div>
+                            </div>`;
                         });
                     } else {
                         refundColumn += '<p style="text-align: center; color: var(--light-text-color); font-style: italic;">暂无</p>';
@@ -2442,7 +2527,10 @@
                     if (paymentList.length > 0) {
                         paymentList.sort((a, b) => b.amount - a.amount);
                         paymentList.forEach(({ person, amount }) => {
-                            paymentColumn += `<div class="payment-item">${person}: ${amount.toFixed(2)} 元</div>`;
+                            paymentColumn += `<div class="payment-item-with-checkbox">
+                                <input type="checkbox" class="payment-checkbox" onchange="togglePaymentStatus(this)">
+                                <div>${person}: ${amount.toFixed(2)} 元</div>
+                            </div>`;
                         });
                     } else {
                         paymentColumn += '<p style="text-align: center; color: var(--light-text-color); font-style: italic;">暂无</p>';
@@ -2455,7 +2543,6 @@
                 refundHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--light-text-color); font-style: italic;">请先完成肾表计算。</div>';
             }
             refundOutput.innerHTML = refundHTML;
-
 
             // === 显示肾额核对 ===
             document.getElementById('expected-total').textContent = totalCostToLeader.toFixed(2);
@@ -2473,37 +2560,50 @@
             updateRemainingTable();
         }
 
-
-
         function updateAllRemainingQuantities() {
             Object.keys(itemTypes).forEach(typeKey => {
                 const itemConfig = itemTypes[typeKey];
 
                 // 更新排表的余量
                 const table = document.getElementById(`data-table-${typeKey}`);
-                // 修正：允许为 'bonus' 类型计算余量，解决了特典数量显示N/A的问题
                 if (table && (!itemConfig.isDynamicTabContent || typeKey === 'bonus')) {
                     let baseQuantity = 0;
                     if (itemConfig.hasSets) {
                         baseQuantity = parseInt(itemConfig.defaults.sets) || 0;
                     } else if (typeKey === 'bonus') {
-                        // 对于手动添加的特典，默认基数为1
                         baseQuantity = 1;
                     }
 
                     table.querySelectorAll('tbody tr').forEach(row => {
-                        const distribution = getDistributionFromInputs(row);
-                        const totalDistributed = Object.values(distribution).reduce((sum, q) => sum + q, 0);
+                        let totalDistributed = 0;
+                        let hasAllMode = false;
+                        let allModeDistributed = 0;
+
+                        row.querySelectorAll('.dist-entry').forEach(entry => {
+                            const isAll = entry.dataset.isAll === 'true';
+                            const quantityInput = entry.querySelector('.dist-quantity');
+
+                            if (isAll) {
+                                hasAllMode = true;
+                                // all模式：数量 = 基数 - 前面已分配的数量
+                                const remaining = baseQuantity - totalDistributed;
+                                quantityInput.value = Math.max(0, remaining);
+                                allModeDistributed = remaining;
+                                totalDistributed += allModeDistributed;
+                            } else {
+                                const quantity = parseInt(quantityInput.value) || 0;
+                                totalDistributed += quantity;
+                            }
+                        });
 
                         let specificBaseQty = baseQuantity;
-                        // 对于自动生成的特典，其基数应等于对应盒子的盒数
                         if (typeKey === 'bonus' && row.dataset.autogen === 'true') {
                             const bonusName = row.querySelector('input[data-type="kind"]')?.value;
                             const sourceItemKey = Object.keys(itemTypes).find(k => itemTypes[k].defaults?.name + '特典' === bonusName);
                             if (sourceItemKey) {
                                 specificBaseQty = parseInt(itemTypes[sourceItemKey].defaults.sets) || 0;
                             } else {
-                                specificBaseQty = 0; // 如果找不到源盒子，则基数为0
+                                specificBaseQty = 0;
                             }
                         }
 
@@ -2512,24 +2612,44 @@
                         if (remainingCell) {
                             remainingCell.textContent = remaining;
                         }
+
+                        updateRowAllModeStyle(row);
                     });
                 }
 
-                // 新增：更新出荷配比的余量
+                // 更新出荷配比的余量
                 if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
                     const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
                     if (shippingTable) {
-                        const baseQuantity = parseInt(itemConfig.defaults.sets) || 0;
-
                         shippingTable.querySelectorAll('tbody tr').forEach(row => {
-                            if (row.classList.contains('gift-marker-row')) return;
+                            if (row.dataset.isgift === 'true') return;
 
-                            const distribution = getDistributionFromInputs(row);
-                            const totalDistributed = Object.values(distribution).reduce((sum, q) => sum + q, 0);
+                            const ratioInput = row.querySelector('.shipping-ratio');
+                            const baseQuantity = ratioInput ? (parseFloat(ratioInput.value) || 0) : 0;
+
+                            let totalDistributed = 0;
+                            let hasAllMode = false;
+
+                            row.querySelectorAll('.dist-entry').forEach(entry => {
+                                const isAll = entry.dataset.isAll === 'true';
+                                const quantityInput = entry.querySelector('.dist-quantity');
+
+                                if (isAll) {
+                                    hasAllMode = true;
+                                    const remaining = baseQuantity - totalDistributed;
+                                    quantityInput.value = Math.max(0, remaining);
+                                    totalDistributed += remaining;
+                                } else {
+                                    const quantity = parseInt(quantityInput.value) || 0;
+                                    totalDistributed += quantity;
+                                }
+                            });
+
                             const remaining = baseQuantity - totalDistributed;
-
                             const remainingCell = row.querySelector('.shipping-remaining-quantity');
                             if (remainingCell) remainingCell.textContent = remaining;
+
+                            updateRowAllModeStyle(row);
                         });
                     }
                 }
@@ -3145,6 +3265,57 @@
                 buttonElement.textContent = '✅ 已复制';
                 setTimeout(() => { buttonElement.textContent = originalText; }, 2000);
             }).catch(err => alert('复制失败: ' + err));
+        }
+        // 切换all模式
+        function toggleAllMode(button, typeKey, isShipping = false) {
+            const entry = button.closest('.dist-entry');
+            const row = entry.closest('tr');
+            const cell = entry.closest('.col-distribution');
+            const quantityInput = entry.querySelector('.dist-quantity');
+            const isCurrentlyAll = entry.dataset.isAll === 'true';
+
+            if (isCurrentlyAll) {
+                // 取消all模式
+                entry.dataset.isAll = 'false';
+                button.classList.remove('active');
+                quantityInput.removeAttribute('readonly');
+                quantityInput.value = '';
+            } else {
+                // 检查当前单元格是否已经有其他all
+                const existingAll = cell.querySelector('.dist-entry[data-is-all="true"]');
+                if (existingAll && existingAll !== entry) {
+                    alert('⚠️ 每个排表单元格只能有一个"all"！请先取消其他的all模式。');
+                    return;
+                }
+
+                // 激活all模式
+                entry.dataset.isAll = 'true';
+                button.classList.add('active');
+                quantityInput.setAttribute('readonly', 'readonly');
+            }
+
+            updateRowAllModeStyle(row);
+            updateAllPrices();
+        }
+
+
+        // 更新行的背景色（如果有all模式）
+        function updateRowAllModeStyle(row) {
+            const hasAll = row.querySelector('.dist-entry[data-is-all="true"]');
+            if (hasAll) {
+                row.classList.add('has-all-mode');
+            } else {
+                row.classList.remove('has-all-mode');
+            }
+        }
+        // 切换付款状态（复选框）
+        function togglePaymentStatus(checkbox) {
+            const parent = checkbox.parentElement;
+            if (checkbox.checked) {
+                parent.classList.add('completed');
+            } else {
+                parent.classList.remove('completed');
+            }
         }
 
     </script>
