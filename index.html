@@ -63,6 +63,29 @@
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 10px;
             margin-top: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .export-title-btn {
+            font-size: 0.6em;
+            padding: 5px 10px;
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            text-decoration: none;
+            flex-shrink: 0;
+            /* 防止按钮被压缩 */
+        }
+
+        .export-title-btn:hover {
+            background-color: var(--success-hover-color);
         }
 
         h3 {
@@ -636,6 +659,18 @@
             margin-top: 10px;
         }
 
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header>h3 {
+            margin-top: 0;
+            /* 将外边距交给容器处理 */
+        }
+
+
         .refund-column {
             background-color: #e8f5e9;
             padding: 15px;
@@ -709,7 +744,6 @@
             <button id="load-button" onclick="showLoadModal()">📂 读取档案</button>
             <button id="reset-button" onclick="resetCurrentSlotData()">🔄 重置数据</button>
             <button id="data-sync-button" onclick="showDataSyncModal()">📡 数据互通</button>
-            <button id="export-table-button" onclick="showExportOptions()">📤 导出表格</button>
         </div>
 
         <p id="current-slot-display"
@@ -737,13 +771,13 @@
         </div>
 
         <section id="tables-section" class="card tab-content active">
-            <h2>【排表】</h2>
+            <h2>【排表】<button class="export-title-btn" onclick="exportTablesData()">【导出Excel】</button></h2>
             <div class="tabs" id="item-tabs"></div>
             <div id="item-tables-container"></div>
         </section>
 
         <section id="remaining-section" class="card tab-content">
-            <h2>【余量】</h2>
+            <h2>【余量】<button class="export-title-btn" onclick="exportRemainingData()">【导出Excel】</button></h2>
             <button onclick="updateRemainingTable()">🔄 更新余量</button>
             <div class="copy-button-container" style="position: relative; margin-top: 10px;">
                 <button class="copy-button" onclick="copyToClipboard('remaining-output', this)"
@@ -756,25 +790,34 @@
         </section>
 
         <section id="summary-section" class="card tab-content">
-            <h2>【肾表】</h2>
+            <h2>【肾表】<button class="export-title-btn" onclick="exportSummaryData()">【导出Excel】</button></h2>
             <button onclick="calculateSummary()">🚀 计算总肾表 & 总排表</button>
             <div
                 style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 20px;">
                 <div class="calc-section">
-                    <h3>本次肾表</h3>
-                    <div class="copy-button-container" style="position: relative;">
-                        <button class="copy-button" onclick="copyToClipboard('total-bill-output', this)"
-                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
-                        <div id="total-bill-output">点击按钮计算...</div>
+                    <div class="section-header">
+                        <h3>本次肾表</h3>
+                        <button class="copy-button" onclick="copyToClipboard('total-bill-output', this)">📋 复制</button>
                     </div>
+                    <div id="total-bill-output">点击按钮计算...</div>
+
                 </div>
                 <div class="calc-section">
-                    <h3>本次排表</h3>
-                    <div class="copy-button-container" style="position: relative;">
-                        <button class="copy-button" onclick="copyToClipboard('total-items-output', this)"
-                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
-                        <div id="total-items-output">点击按钮计算...</div>
+                    <div class="section-header">
+                        <h3>本次排表</h3>
+                        <button class="copy-button" onclick="copyToClipboard('total-items-output', this)">📋 复制</button>
                     </div>
+                    <div id="total-items-output">点击按钮计算...</div>
+
+                </div>
+            </div>
+
+            <h2 style="margin-top: 40px;">【国际肾表】</h2>
+            <div class="calc-section">
+                <div class="copy-button-container" style="position: relative;">
+                    <button class="copy-button" onclick="copyToClipboard('shipping-bill-output', this)"
+                        style="position: absolute; top: -5px; right: 0;">📋 复制</button>
+                    <div id="shipping-bill-output">点击按钮计算...</div>
                 </div>
             </div>
 
@@ -782,28 +825,29 @@
             <div
                 style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-top: 20px;">
                 <div class="calc-section">
-                    <h3>实际肾表</h3>
-                    <div class="copy-button-container" style="position: relative;">
-                        <button class="copy-button" onclick="copyToClipboard('actual-bill-output', this)"
-                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
-                        <div id="actual-bill-output">点击按钮计算...</div>
+                    <div class="section-header">
+                        <h3>实际肾表</h3>
+                        <button class="copy-button" onclick="copyToClipboard('actual-bill-output', this)">📋 复制</button>
                     </div>
+                    <div id="actual-bill-output">点击按钮计算...</div>
+
                 </div>
                 <div class="calc-section">
-                    <h3>实际排表</h3>
-                    <div class="copy-button-container" style="position: relative;">
-                        <button class="copy-button" onclick="copyToClipboard('actual-items-output', this)"
-                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
-                        <div id="actual-items-output">点击按钮计算...</div>
+                    <div class="section-header">
+                        <h3>实际排表</h3>
+                        <button class="copy-button" onclick="copyToClipboard('actual-items-output', this)">📋
+                            复制</button>
                     </div>
+                    <div id="actual-items-output">点击按钮计算...</div>
+
                 </div>
                 <div class="calc-section" style="grid-column: 1 / -1;">
-                    <h3>退补差额</h3>
-                    <div class="copy-button-container" style="position: relative;">
-                        <button class="copy-button" onclick="copyToClipboard('refund-output', this)"
-                            style="position: absolute; top: -5px; right: 0;">📋 复制</button>
-                        <div id="refund-output" class="refund-payment-grid">点击按钮计算...</div>
+                    <div class="section-header">
+                        <h3>退补差额</h3>
+                        <button class="copy-button" onclick="copyToClipboard('refund-output', this)">📋 复制</button>
                     </div>
+                    <div id="refund-output" class="refund-payment-grid">点击按钮计算...</div>
+
                 </div>
             </div>
 
@@ -818,14 +862,6 @@
         </section>
 
         <p class="footer-credit">All by keichi</p>
-
-        <div id="export-options-modal">
-            <h3>选择导出内容 (Excel)</h3>
-            <button class="modal-button" onclick="exportTablesData(); hideExportOptions();">导出排表</button>
-            <button class="modal-button" onclick="exportSummaryData(); hideExportOptions();">导出肾表</button>
-            <button class="modal-button" onclick="exportAllData(); hideExportOptions();">导出全部</button>
-            <button class="modal-button cancel-button" onclick="hideExportOptions();">取消</button>
-        </div>
 
         <div id="data-sync-modal">
             <h3>数据互通</h3>
@@ -868,9 +904,10 @@
                 hasChars: true, hasSets: true, setsLabel: '盒数', hasBonusPrice: true, isDynamic: false,
             },
             'single': { id_prefix: 'single', key: '单领', isDynamicTabContent: true, isDynamic: false },
-            'bonus': { id_prefix: 'bonus', key: '特典', isDynamicTabContent: true, isDynamic: false }
+            'bonus': { id_prefix: 'bonus', key: '特典', isDynamicTabContent: true, isDynamic: false },
+            'shipping': { id_prefix: 'shipping', key: '国际邮费', isShippingFee: true, isDynamic: false }
         };
-        let orderedTypesForTabs = ['boxA', 'boxB', 'single', 'bonus'];
+        let orderedTypesForTabs = ['boxA', 'boxB', 'single', 'bonus', 'shipping'];
 
         // --- 皮肤更换器逻辑 ---
         const THEME_STORAGE_KEY = 'keichiKiguTheme-v1';
@@ -1088,6 +1125,45 @@
                         }
                     });
                 }
+                // 保存国际邮费数据
+                if (typeKey === 'shipping') {
+                    data.shippingFeeConfig = {
+                        totalFee: document.getElementById('total-shipping-fee')?.value || '0',
+                        pointsData: [],
+                        customPointsData: [] // 新增：用于存储自定义行
+                    };
+
+                    const shippingTable = document.getElementById('shipping-fee-table');
+                    if (shippingTable) {
+                        shippingTable.querySelectorAll('tbody tr').forEach(row => {
+                            const typeName = row.cells[0].textContent;
+                            const pointsInput = row.querySelector('input[type="number"]');
+                            if (pointsInput) {
+                                data.shippingFeeConfig.pointsData.push({
+                                    type: typeName,
+                                    points: pointsInput.value
+                                });
+                            }
+                        });
+                    }
+                    // 新增：保存自定义行数据
+                    const customShippingTable = document.getElementById('custom-shipping-fee-table');
+                    if (customShippingTable) {
+                        customShippingTable.querySelectorAll('tbody tr').forEach(row => {
+                            const nameInput = row.cells[0].querySelector('input');
+                            const quantityInput = row.cells[1].querySelector('input');
+                            const pointsInput = row.cells[2].querySelector('input');
+                            if (nameInput && quantityInput && pointsInput) {
+                                data.shippingFeeConfig.customPointsData.push({
+                                    name: nameInput.value,
+                                    quantity: quantityInput.value,
+                                    points: pointsInput.value
+                                });
+                            }
+                        });
+                    }
+                }
+
 
                 // 新增：保存出荷配比数据（只针对盒子类型）
                 if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
@@ -1147,18 +1223,6 @@
             }
         }
 
-        function archiveData() {
-            const defaultName = new Date().toLocaleString('zh-CN').replace(/[\/:]/g, '').replace(' ', '_');
-            const newSlotName = prompt(`请输入档案名称（用于在读取时识别）`, defaultName);
-
-            if (newSlotName && newSlotName.trim() !== '') {
-                currentSlotName = newSlotName.trim();
-                localStorage.setItem(ACTIVE_SLOT_KEY, currentSlotName);
-                document.getElementById('current-slot-display').textContent = `当前存档: ${currentSlotName}`;
-                saveData(false);
-                alert(`已存储至新档案【${currentSlotName}】`);
-            }
-        }
 
         function loadData(importedData = null) {
             let dataToLoad = null;
@@ -1172,7 +1236,7 @@
 
             // Reset state before loading
             itemTypes = JSON.parse(JSON.stringify(initialItemTypes));
-            orderedTypesForTabs = ['boxA', 'boxB', 'single', 'bonus'];
+            orderedTypesForTabs = ['boxA', 'boxB', 'single', 'bonus', 'shipping'];
             dynamicItemCounter = 0;
 
             if (dataToLoad) {
@@ -1194,6 +1258,42 @@
             orderedTypesForTabs = orderedTypesForTabs.filter(typeKey => itemTypes[typeKey]);
 
             generateTables(dataToLoad ? dataToLoad.tables : null, dataToLoad ? dataToLoad.shippingTables : null);
+
+            // 恢复国际邮费数据（必须在generateTables之后）
+            if (dataToLoad && dataToLoad.shippingFeeConfig) {
+                setTimeout(() => {
+                    const totalFeeInput = document.getElementById('total-shipping-fee');
+                    if (totalFeeInput) {
+                        totalFeeInput.value = dataToLoad.shippingFeeConfig.totalFee || '0';
+                    }
+
+                    updateShippingFeeTable(); // 生成自动行
+
+                    const tableBody = document.querySelector('#shipping-fee-table tbody');
+                    if (tableBody && dataToLoad.shippingFeeConfig.pointsData) {
+                        dataToLoad.shippingFeeConfig.pointsData.forEach(item => {
+                            const row = Array.from(tableBody.rows).find(r =>
+                                r.cells[0].textContent === item.type
+                            );
+                            if (row) {
+                                const input = row.querySelector('input[type="number"]');
+                                if (input) input.value = item.points;
+                            }
+                        });
+                    }
+
+                    // 新增：恢复自定义行
+                    if (dataToLoad.shippingFeeConfig.customPointsData) {
+                        dataToLoad.shippingFeeConfig.customPointsData.forEach(customItem => {
+                            addCustomShippingRow(customItem);
+                        });
+                    }
+
+                    updateShippingFeeCalculation();
+                }, 100);
+            }
+
+
             updateAllPrices();
 
             if (importedData || !dataToLoad) {
@@ -1201,6 +1301,7 @@
             }
             updateNameCaches();
         }
+
 
         function resetCurrentSlotData() {
             if (confirm(`确定要重置当前存档【${currentSlotName}】的所有数据吗？此操作不可逆！`)) {
@@ -1316,8 +1417,8 @@
                 let configHTML = '';
                 if (!itemConfig.isDynamicTabContent) {
                     configHTML += `<div class="item-config-header">
-                        <div class="input-group"><label>商品名</label><input type="text" id="item-name-${idPrefix}" value="${defaults.name || ''}" oninput="updateItemConfigAndRecalculate('${typeKey}')"></div>
-                        <div class="input-group"><label>价格</label><input type="number" id="item-price-${idPrefix}" value="${defaults.price || ''}" oninput="updateItemConfigAndRecalculate('${typeKey}')"></div>`;
+                <div class="input-group"><label>商品名</label><input type="text" id="item-name-${idPrefix}" value="${defaults.name || ''}" oninput="updateItemConfigAndRecalculate('${typeKey}')"></div>
+                <div class="input-group"><label>价格</label><input type="number" id="item-price-${idPrefix}" value="${defaults.price || ''}" oninput="updateItemConfigAndRecalculate('${typeKey}')"></div>`;
                     if (itemConfig.hasChars) {
                         configHTML += `<div class="input-group"><label>角色数</label><input type="number" id="item-chars-${idPrefix}" value="${defaults.chars || ''}" min="0" oninput="handleCharacterCountChangeAndCalc('${typeKey}')"></div>`;
                     }
@@ -1331,6 +1432,56 @@
                         configHTML += `<button class="remove-btn-text" style="font-size:1em; padding:5px; background-color:var(--accent-color); color:white; border-radius:4px;" onclick="removeDynamicItemType('${typeKey}')">删除此商品类型</button>`;
                     }
                     configHTML += `</div>`;
+                }
+
+                // 国际邮费特殊处理
+                if (typeKey === 'shipping') {
+                    let shippingHTML = `
+                <div class="item-config-header">
+                    <div class="input-group">
+                        <label>总国际邮费 (元)</label>
+                        <input type="number" id="total-shipping-fee" value="0" oninput="updateShippingFeeCalculation()" style="max-width: 150px;">
+                    </div>
+                </div>
+                <h3>国际邮费分摊表 (自动生成)</h3>
+                <div class="info-text" style="margin-bottom: 15px;">
+                    💡 系统会自动生成盒子和单领的种类。默认点数为1，请根据实际重量修改点数。
+                </div>
+                <div class="table-scroll-wrapper">
+                    <table id="shipping-fee-table">
+                        <thead>
+                            <tr>
+                                <th class="col-name">种类</th>
+                                <th class="col-value">点数</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <h3 style="margin-top: 30px;">自定义邮费项目</h3>
+                <div class="table-scroll-wrapper">
+                    <table id="custom-shipping-fee-table">
+                        <thead>
+                            <tr>
+                                <th class="col-name">种类</th>
+                                <th class="col-value">个数</th>
+                                <th class="col-value">点数/个</th>
+                                <th class="col-operation">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <button class="add-row-btn" onclick="addCustomShippingRow()">添加一行</button>
+                <div id="shipping-fee-summary" class="info-text" style="margin-top: 15px;">
+                    <p>总邮费点数: <span id="total-shipping-points" class="result-field">0</span></p>
+                    <p>每点邮费: <span id="per-point-fee" class="result-field">0.00</span> 元</p>
+                </div>
+            `;
+
+                    tableDiv.innerHTML = shippingHTML;
+                    tablesContainer.appendChild(tableDiv);
+                    return; // 国际邮费表格特殊处理，直接返回
                 }
 
                 // 排表表格
@@ -1352,31 +1503,31 @@
                 let shippingTableHTML = '';
                 if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
                     shippingTableHTML = `
-                        <h3 style="margin-top: 40px;">${defaults.name || itemConfig.key} 出荷配比 
-                            <button onclick="syncToShippingTable('${typeKey}')" style="margin-left: 15px; font-size: 0.85em;">📋 同步排表</button>
-                        </h3>
-                        <div class="table-scroll-wrapper">
-                            <table id="shipping-table-${typeKey}">
-                                <thead>
-                                    <tr>
-                                        <th class="col-name">角色</th>
-                                        <th class="col-value">均价</th>
-                                        <th class="col-value">调价 <span id="调价提醒-shipping-${typeKey}" class="warning-text"></span></th>
-                                        <th class="col-value">终价</th>
-                                        <th class="col-distribution">出荷配比</th>
-                                        <th class="col-value">余量</th>
-                                        <th class="col-operation">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                                             <p style="font-size: 0.85em; color: var(--light-text-color); margin-top: 10px; margin-bottom: 5px;">
-                            💡 提示：赠品将用于降低本盒均价计算，公式为 (总价×汇率 - 特典价格 - 赠品总价) ÷ 角色数
-                        </p>
-                        <button class="add-row-btn" onclick="addGiftRow('${typeKey}')">🎁 添加赠品</button>
-            <div id="shipping-page-bill-${typeKey}" class="info-text" style="white-space: pre-wrap;"></div>
-                    `;
+                <h3 style="margin-top: 40px;">${defaults.name || itemConfig.key} 出荷配比 
+                    <button onclick="syncToShippingTable('${typeKey}')" style="margin-left: 15px; font-size: 0.85em;">📋 同步排表</button>
+                </h3>
+                <div class="table-scroll-wrapper">
+                    <table id="shipping-table-${typeKey}">
+                        <thead>
+                            <tr>
+                                <th class="col-name">角色</th>
+                                <th class="col-value">均价</th>
+                                <th class="col-value">调价 <span id="调价提醒-shipping-${typeKey}" class="warning-text"></span></th>
+                                <th class="col-value">终价</th>
+                                <th class="col-distribution">出荷配比</th>
+                                <th class="col-value">余量</th>
+                                <th class="col-operation">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                                     <p style="font-size: 0.85em; color: var(--light-text-color); margin-top: 10px; margin-bottom: 5px;">
+                    💡 提示：赠品将用于降低本盒均价计算，公式为 (总价×汇率 - 特典价格 - 赠品总价) ÷ 角色数
+                </p>
+                <button class="add-row-btn" onclick="addGiftRow('${typeKey}')">🎁 添加赠品</button>
+    <div id="shipping-page-bill-${typeKey}" class="info-text" style="white-space: pre-wrap;"></div>
+            `;
                 }
 
                 tableDiv.innerHTML = configHTML + `<h3>${tableTitle}</h3>` + tableHTMLContent + shippingTableHTML;
@@ -1419,6 +1570,19 @@
             addNewButton.className = 'item-tab-button add-new-item-type-btn';
             addNewButton.onclick = addNewCustomItemType;
             tabsContainer.appendChild(addNewButton);
+        }
+
+        function addCustomShippingRow(data = {}) {
+            const tableBody = document.querySelector('#custom-shipping-fee-table tbody');
+            if (!tableBody) return;
+
+            const newRow = tableBody.insertRow();
+            newRow.innerHTML = `
+        <td class="col-name"><input type="text" placeholder="自定义种类" value="${data.name || ''}" oninput="updateShippingFeeCalculation()"></td>
+        <td class="col-value"><input type="number" placeholder="个数" min="1" value="${data.quantity || '1'}" oninput="updateShippingFeeCalculation()"></td>
+        <td class="col-value"><input type="number" placeholder="点数/个" min="0" step="0.1" value="${data.points || '1'}" oninput="updateShippingFeeCalculation()"></td>
+        <td class="col-operation"><button type="button" class="remove-btn-text" onclick="this.closest('tr').remove(); updateShippingFeeCalculation();">×</button></td>
+    `;
         }
 
 
@@ -1471,7 +1635,7 @@
             row.innerHTML = rowHTML;
         }
 
-             function populateShippingTableRow(row, typeKey, index, data, isGift = false, isFromSync = false) {
+        function populateShippingTableRow(row, typeKey, index, data, isGift = false, isFromSync = false) {
             const itemConfig = itemTypes[typeKey];
             row.dataset.type = typeKey;
             row.dataset.index = index;
@@ -1780,6 +1944,11 @@
                     }
                 }
             });
+            // 更新国际邮费表
+            if (document.getElementById('shipping-fee-table')) {
+                updateShippingFeeTable();
+                updateShippingFeeCalculation();
+            }
 
             updateAllRemainingQuantities();
         }
@@ -1840,6 +2009,205 @@
             if (Object.keys(bill).length === 0) billText += '暂无数据';
             else Object.entries(bill).sort().forEach(([name, amount]) => billText += `${name}: ${amount.toFixed(2)} 元\n`);
             outputDiv.textContent = billText;
+        }
+
+        function updateShippingFeeTable() {
+            const tableBody = document.querySelector('#shipping-fee-table tbody');
+            if (!tableBody) return;
+
+            const existingData = {};
+            tableBody.querySelectorAll('tr').forEach(row => {
+                const typeCell = row.cells[0];
+                const pointsInput = row.querySelector('input[type="number"]');
+                if (typeCell && pointsInput) {
+                    existingData[typeCell.textContent] = pointsInput.value;
+                }
+            });
+
+            tableBody.innerHTML = '';
+
+            // 生成盒子种类（均）
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                if (itemConfig && itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
+                    const itemName = itemConfig.defaults?.name || itemConfig.key;
+                    const typeName = `${itemName}（均）`;
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                <td class="col-name">${typeName}</td>
+                <td class="col-value">
+                    <input type="number" value="${existingData[typeName] || '1'}" 
+                           min="0" step="0.1" 
+                           oninput="updateShippingFeeCalculation()"
+                           style="max-width: 80px;">
+                </td>
+            `;
+                }
+            });
+
+            // 生成单领种类
+            const singleKinds = new Set();
+            const singleTable = document.getElementById('data-table-single');
+            if (singleTable) {
+                singleTable.querySelectorAll('tbody tr').forEach(row => {
+                    const kindInput = row.querySelector('input[data-type="kind"]');
+                    if (kindInput && kindInput.value.trim()) {
+                        singleKinds.add(kindInput.value.trim());
+                    }
+                });
+
+                singleKinds.forEach(kind => {
+                    const row = tableBody.insertRow();
+                    row.innerHTML = `
+                <td class="col-name">${kind}</td>
+                <td class="col-value">
+                    <input type="number" value="${existingData[kind] || '1'}" 
+                           min="0" step="0.1" 
+                           oninput="updateShippingFeeCalculation()"
+                           style="max-width: 80px;">
+                </td>
+            `;
+                });
+            }
+        }
+
+        function updateShippingFeeCalculation() {
+            const totalFeeInput = document.getElementById('total-shipping-fee');
+            const tableBody = document.querySelector('#shipping-fee-table tbody');
+            const totalPointsSpan = document.getElementById('total-shipping-points');
+            const perPointFeeSpan = document.getElementById('per-point-fee');
+
+            if (!totalFeeInput || !tableBody || !totalPointsSpan || !perPointFeeSpan) return;
+
+            const totalFee = parseFloat(totalFeeInput.value) || 0;
+            let totalPoints = 0;
+
+            // 1. 计算自动生成项目的总点数
+            tableBody.querySelectorAll('tr').forEach(row => {
+                const typeName = row.cells[0].textContent;
+                const pointsInput = row.querySelector('input[type="number"]');
+                const pointsPerItem = parseFloat(pointsInput?.value) || 0;
+
+                if (typeName.includes('（均）')) {
+                    const boxName = typeName.replace('（均）', '');
+                    Object.keys(itemTypes).forEach(typeKey => {
+                        const itemConfig = itemTypes[typeKey];
+                        if (itemConfig && itemConfig.defaults?.name === boxName) {
+                            const chars = parseInt(itemConfig.defaults.chars) || 0;
+                            const sets = parseInt(itemConfig.defaults.sets) || 0;
+                            totalPoints += pointsPerItem * chars * sets;
+                        }
+                    });
+                } else {
+                    const singleTable = document.getElementById('data-table-single');
+                    if (singleTable) {
+                        singleTable.querySelectorAll('tbody tr').forEach(singleRow => {
+                            const kindInput = singleRow.querySelector('input[data-type="kind"]');
+                            if (kindInput && kindInput.value.trim() === typeName) {
+                                const distribution = getDistributionFromInputs(singleRow);
+                                const qty = Object.values(distribution).reduce((sum, q) => sum + q, 0);
+                                totalPoints += pointsPerItem * qty;
+                            }
+                        });
+                    }
+                }
+            });
+
+            // 2. 计算自定义项目的总点数
+            const customTableBody = document.querySelector('#custom-shipping-fee-table tbody');
+            if (customTableBody) {
+                customTableBody.querySelectorAll('tr').forEach(row => {
+                    const quantity = parseFloat(row.cells[1].querySelector('input')?.value) || 0;
+                    const pointsPerItem = parseFloat(row.cells[2].querySelector('input')?.value) || 0;
+                    totalPoints += quantity * pointsPerItem;
+                });
+            }
+
+
+            totalPointsSpan.textContent = totalPoints.toFixed(1);
+
+            const perPointFee = totalPoints > 0 ? totalFee / totalPoints : 0;
+            perPointFeeSpan.textContent = (Math.ceil(perPointFee * 100) / 100).toFixed(2);
+        }
+
+
+        function calculateShippingFeeBill() {
+            const totalFeeInput = document.getElementById('total-shipping-fee');
+            const tableBody = document.querySelector('#shipping-fee-table tbody');
+
+            if (!totalFeeInput || !tableBody) return {};
+
+            const totalFee = parseFloat(totalFeeInput.value) || 0;
+            const perPointFeeSpan = document.getElementById('per-point-fee');
+            const perPointFee = parseFloat(perPointFeeSpan?.textContent) || 0;
+
+            const shippingBill = {};
+            const pointsPerType = {};
+
+            // 先收集每种类型的点数
+            tableBody.querySelectorAll('tr').forEach(row => {
+                const typeName = row.cells[0].textContent;
+                const pointsInput = row.querySelector('input[type="number"]');
+                pointsPerType[typeName] = parseFloat(pointsInput?.value) || 0;
+            });
+
+            // 计算盒子类型的邮费
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                if (!itemConfig || itemConfig.isDynamicTabContent || typeKey === 'shipping') return;
+
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (!table) return;
+
+                if (itemConfig.hasSets) {
+                    // 盒子类型
+                    const boxName = itemConfig.defaults?.name || itemConfig.key;
+                    const typeNameKey = `${boxName}（均）`;
+                    const pointsPerChar = pointsPerType[typeNameKey] || 0;
+
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        const distribution = getDistributionFromInputs(row);
+                        for (const person in distribution) {
+                            const qty = distribution[person];
+                            const points = pointsPerChar * qty;
+                            const fee = points * perPointFee;
+
+                            if (!shippingBill[person]) {
+                                shippingBill[person] = { points: 0, fee: 0 };
+                            }
+                            shippingBill[person].points += points;
+                            shippingBill[person].fee += fee;
+                        }
+                    });
+                }
+            });
+
+            // 计算单领的邮费
+            const singleTable = document.getElementById('data-table-single');
+            if (singleTable) {
+                singleTable.querySelectorAll('tbody tr').forEach(row => {
+                    const kindInput = row.querySelector('input[data-type="kind"]');
+                    const kind = kindInput?.value.trim();
+                    if (!kind) return;
+
+                    const pointsPerItem = pointsPerType[kind] || 0;
+                    const distribution = getDistributionFromInputs(row);
+
+                    for (const person in distribution) {
+                        const qty = distribution[person];
+                        const points = pointsPerItem * qty;
+                        const fee = points * perPointFee;
+
+                        if (!shippingBill[person]) {
+                            shippingBill[person] = { points: 0, fee: 0 };
+                        }
+                        shippingBill[person].points += points;
+                        shippingBill[person].fee += fee;
+                    }
+                });
+            }
+
+            return shippingBill;
         }
 
         function calculateSummary() {
@@ -1981,6 +2349,29 @@
             }
             itemsOutput.textContent = itemsText;
 
+            // === 显示国际肾表 ===
+            updateShippingFeeTable();
+            updateShippingFeeCalculation();
+            const shippingBill = calculateShippingFeeBill();
+            const perPointFee = parseFloat(document.getElementById('per-point-fee')?.textContent) || 0;
+            const shippingBillOutput = document.getElementById('shipping-bill-output');
+            if (shippingBillOutput) {
+                let shippingHTML = `<h3 style="margin-top: 0;">【国际邮费】</h3>`;
+                shippingHTML += `<p>每点 <span class="result-field">${perPointFee.toFixed(2)}</span> 元</p>`;
+
+                if (Object.keys(shippingBill).length > 0) {
+                    Object.entries(shippingBill).sort().forEach(([person, data]) => {
+                        shippingHTML += `<div class="person-bill-item">
+                    <strong>--- ${person} ---</strong><br>
+                    ${data.points.toFixed(1)}点，${(Math.ceil(data.fee * 100) / 100).toFixed(2)}元
+                </div>`;
+                    });
+                } else {
+                    shippingHTML += '<p style="color: var(--light-text-color); text-align: center; font-style: italic;">暂无邮费数据</p>';
+                }
+                shippingBillOutput.innerHTML = shippingHTML;
+            }
+
             // === 显示实际肾表 ===
             const actualBillOutput = document.getElementById('actual-bill-output');
             let actualBillHTML = '';
@@ -2001,9 +2392,9 @@
             if (Object.keys(actualItems).length > 0) {
                 Object.keys(actualItems).sort().forEach(person => {
                     actualItemsHTML += `<div class="person-items-section">
-                        <div class="person-name">--- ${person} ---</div>
-                        ${actualItems[person].map(item => `<div class="item-line">${item}</div>`).join('')}
-                    </div>`;
+                <div class="person-name">--- ${person} ---</div>
+                ${actualItems[person].map(item => `<div class="item-line">${item}</div>`).join('')}
+            </div>`;
                 });
             } else {
                 actualItemsHTML = '<p style="color: var(--light-text-color); text-align: center; font-style: italic;">请先在出荷配比/单领/特典中填写信息。</p>';
@@ -2081,6 +2472,7 @@
 
             updateRemainingTable();
         }
+
 
 
         function updateAllRemainingQuantities() {
@@ -2190,8 +2582,6 @@
         }
 
         // --- MODALS & EXPORT ---
-        function showExportOptions() { document.getElementById('export-options-modal').style.display = 'block'; }
-        function hideExportOptions() { document.getElementById('export-options-modal').style.display = 'none'; }
         function showDataSyncModal() { document.getElementById('data-sync-modal').style.display = 'block'; }
         function hideDataSyncModal() { document.getElementById('data-sync-modal').style.display = 'none'; }
 
@@ -2257,7 +2647,7 @@
 
                 const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.replace(/<span.*<\/span>/g, '').trim());
                 if (headers.includes('排表')) {
-                    const排表Index = headers.indexOf('排表');
+                    const 排表Index = headers.indexOf('排表'); // <--- 修正就在这一行，在const和“排表Index”之间加了一个空格
                     headers.splice(排表Index, 1, '分配给', '数量');
                 }
                 sheetData.push(headers);
@@ -2292,6 +2682,7 @@
             });
             return allSheetsData;
         }
+
 
         function getSummaryDataForExport() {
             calculateSummary();
@@ -2330,6 +2721,35 @@
             });
             sheets["肾额核对"] = checkData;
             return sheets;
+        }
+
+        function exportRemainingData() {
+            updateRemainingTable(); // 确保数据是更新的
+            const outputDiv = document.getElementById('remaining-output');
+            const sheetData = [['种类', '项目', '价格', '余量']];
+            let hasData = false;
+
+            outputDiv.querySelectorAll('.calc-section').forEach(section => {
+                const itemType = section.querySelector('h3').textContent.trim();
+                section.querySelectorAll('tbody tr').forEach(row => {
+                    hasData = true;
+                    const cells = row.querySelectorAll('td');
+                    const itemName = cells[0].textContent.trim();
+                    const price = cells[1].textContent.trim();
+                    const remaining = cells[2].textContent.trim();
+                    sheetData.push([itemType, itemName, price, remaining]);
+                });
+            });
+
+            if (!hasData) {
+                alert('没有余量数据可以导出。');
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(sheetData);
+            XLSX.utils.book_append_sheet(wb, ws, '余量');
+            downloadExcelWorkbook(wb, '日谷打表机-余量.xlsx');
         }
 
         function exportTablesData() {
@@ -2394,11 +2814,118 @@
             reader.readAsText(file);
         }
 
+        function getCurrentUIData() {
+            const data = {
+                tables: {},
+                shippingTables: {}
+            };
+
+            Object.keys(itemTypes).forEach(typeKey => {
+                const itemConfig = itemTypes[typeKey];
+                if (!itemConfig) return;
+
+                const dataTableKey = itemConfig.key;
+
+                // 保存排表数据
+                data.tables[dataTableKey] = [];
+                const table = document.getElementById(`data-table-${typeKey}`);
+                if (table) {
+                    table.querySelectorAll('tbody tr').forEach(row => {
+                        const rowData = { distribution: [] };
+                        let hasContent = false;
+
+                        const charNameInput = row.querySelector('input[placeholder="角色名..."]');
+                        if (charNameInput) rowData.charName = charNameInput.value.trim();
+
+                        const kindInput = row.querySelector('input[data-type="kind"]');
+                        if (kindInput) rowData.kind = kindInput.value.trim();
+
+                        if (rowData.charName || rowData.kind) hasContent = true;
+
+                        const priceInput = row.querySelector('input[data-type="price"]');
+                        if (priceInput) rowData.price = priceInput.value.trim();
+                        if (rowData.price) hasContent = true;
+
+                        const adjPriceInput = row.querySelector('.adj-price');
+                        if (adjPriceInput) rowData.adjPrice = adjPriceInput.value;
+                        if (parseFloat(rowData.adjPrice) !== 0) hasContent = true;
+
+                        rowData.isAutoGen = row.dataset.autogen === 'true';
+
+                        row.querySelectorAll('.dist-entry').forEach(entry => {
+                            const name = entry.querySelector('.dist-name').value.trim();
+                            const quantity = entry.querySelector('.dist-quantity').value.trim();
+                            if (name || quantity) {
+                                rowData.distribution.push({ name, quantity });
+                                hasContent = true;
+                            }
+                        });
+
+                        if (itemConfig.hasChars || hasContent) {
+                            data.tables[dataTableKey].push(rowData);
+                        }
+                    });
+                }
+
+                // 保存出荷配比数据
+                if (itemConfig.hasSets && !itemConfig.isDynamicTabContent) {
+                    data.shippingTables[dataTableKey] = [];
+                    const shippingTable = document.getElementById(`shipping-table-${typeKey}`);
+                    if (shippingTable) {
+                        shippingTable.querySelectorAll('tbody tr').forEach(row => {
+                            const rowData = { distribution: [] };
+                            let hasContent = false;
+
+                            if (row.dataset.isgift === 'true') {
+                                rowData.isGift = true;
+                                const charNameInput = row.querySelector('input[placeholder="赠品角色..."]');
+                                if (charNameInput) rowData.charName = charNameInput.value.trim();
+                                const giftPriceInput = row.querySelector('.gift-price');
+                                if (giftPriceInput) rowData.giftPrice = giftPriceInput.value;
+                                hasContent = true;
+                            } else {
+                                const charNameInput = row.querySelector('input[placeholder="角色名..."]');
+                                if (charNameInput) rowData.charName = charNameInput.value.trim();
+                                if (rowData.charName) hasContent = true;
+
+                                const adjPriceInput = row.querySelector('.adj-price');
+                                if (adjPriceInput) rowData.adjPrice = adjPriceInput.value;
+                                if (parseFloat(rowData.adjPrice) !== 0) hasContent = true;
+
+                                rowData.isFromSync = row.dataset.fromsync === 'true';
+                            }
+
+                            row.querySelectorAll('.dist-entry').forEach(entry => {
+                                const name = entry.querySelector('.dist-name').value.trim();
+                                const quantity = entry.querySelector('.dist-quantity').value.trim();
+                                if (name || quantity) {
+                                    rowData.distribution.push({ name, quantity });
+                                    hasContent = true;
+                                }
+                            });
+
+                            if (hasContent) {
+                                data.shippingTables[dataTableKey].push(rowData);
+                            }
+                        });
+                    }
+                }
+            });
+            return data;
+        }
+
         function addNewCustomItemType() {
+            // 1. 先获取当前界面上的所有数据
+            const currentData = getCurrentUIData();
+
+            // 2. 创建新的商品类型
             dynamicItemCounter++;
             const newTypeKey = `custom_${dynamicItemCounter}`;
             const newItemName = prompt("请输入新商品类型的名称:", `自定义商品 ${dynamicItemCounter}`);
-            if (!newItemName) { dynamicItemCounter--; return; }
+            if (!newItemName) {
+                dynamicItemCounter--;
+                return;
+            }
 
             itemTypes[newTypeKey] = {
                 id_prefix: newTypeKey, key: newItemName,
@@ -2407,9 +2934,11 @@
             };
             orderedTypesForTabs.splice(orderedTypesForTabs.indexOf('single'), 0, newTypeKey);
 
-            generateTables(null);
+            // 3. 使用刚刚保存的数据重新生成所有表格（包括新的这一个）
+            generateTables(currentData.tables, currentData.shippingTables);
             showItemTab(newTypeKey);
         }
+
 
         function removeDynamicItemType(typeKeyToRemove) {
             if (confirm(`确定要删除商品类型 "${itemTypes[typeKeyToRemove].key}" 吗？其所有配置和排表数据都将丢失。`)) {
@@ -2453,7 +2982,7 @@
             });
         }
 
-               function setupAutocomplete() {
+        function setupAutocomplete() {
             const suggestionBox = document.getElementById('autocomplete-suggestions');
             let activeSuggestionInput = null;
             let activeSuggestionIndex = -1;
